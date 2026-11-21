@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IdeaVault - 나만의 아이디어 & 레퍼런스 저장소</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'Noto Sans KR', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans KR', sans-serif;
+            background-image: radial-gradient(rgba(99, 102, 241, 0.08) 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+        .dark body {
+            background-image: radial-gradient(rgba(129, 140, 248, 0.08) 1px, transparent 1px);
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-4px); }
+        }
+        .animate-float {
+            animation: float 3.5s ease-in-out infinite;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .pb-safe {
+            padding-bottom: env(safe-area-inset-bottom, 12px);
+        }
+        @media (hover: hover) {
+            .bento-card {
+                transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            }
+            .bento-card:hover {
+                transform: translateY(-6px) scale(1.01);
+            }
+        }
+        .icon-3d-shadow {
+            filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.18));
+        }
+    </style>
+</head>
+<body class="bg-[#F6F7FB] text-slate-900 dark:bg-[#0B0F19] dark:text-slate-100 min-h-screen flex flex-col relative overflow-x-hidden pb-24 md:pb-8">
+
+    <!-- 배경 장식용 오로라 블러 효과 -->
+    <div class="fixed top-[-10%] left-[-5%] w-72 sm:w-96 h-72 sm:h-96 bg-purple-400/20 dark:bg-purple-600/15 rounded-full blur-3xl pointer-events-none -z-10"></div>
+    <div class="fixed bottom-[-10%] right-[-5%] w-72 sm:w-96 h-72 sm:h-96 bg-amber-400/20 dark:bg-indigo-600/15 rounded-full blur-3xl pointer-events-none -z-10"></div>
+
+    <!-- 상단 네비게이션 바 -->
+    <header class="sticky top-0 z-30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200/70 dark:border-slate-800/70">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3 flex items-center justify-between gap-2 sm:gap-3">
+            <!-- 로고 -->
+            <div class="flex items-center gap-2.5 sm:gap-3 cursor-pointer group shrink-0" onclick="resetAllFilters()">
+                <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-0.5 shadow-lg shadow-indigo-500/30 group-hover:scale-105 transition-transform">
+                    <div class="w-full h-full bg-white/10 backdrop-blur-sm rounded-[14px] flex items-center justify-center">
+                        <svg class="w-6 h-6 sm:w-7 sm:h-7 icon-3d-shadow animate-float" viewBox="0 0 64 64" fill="none">
+                            <defs>
+                                <linearGradient id="logoGrad1" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+                                    <stop offset="0%" stop-color="#FFFBEB"/>
+                                    <stop offset="100%" stop-color="#FDE68A"/>
+                                </linearGradient>
+                                <linearGradient id="logoGrad2" x1="10" y1="10" x2="54" y2="54" gradientUnits="userSpaceOnUse">
+                                    <stop offset="0%" stop-color="#38BDF8"/>
+                                    <stop offset="100%" stop-color="#818CF8"/>
+                                </linearGradient>
+                            </defs>
+                            <path d="M32 6L54 19V45L32 58L10 45V19L32 6Z" fill="url(#logoGrad2)"/>
+                            <path d="M32 6L54 19L32 32L10 19L32 6Z" fill="url(#logoGrad1)"/>
+                            <path d="M32 32L54 19V45L32 58V32Z" fill="#4F46E5" fill-opacity="0.45"/>
+                            <circle cx="32" cy="19" r="5" fill="#FFFFFF" fill-opacity="0.8"/>
+                        </svg>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="font-extrabold text-lg sm:text-xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400 leading-none">
+                            IdeaVault
+                        </span>
+                        <!-- 실시간 동기화 상태 배지 -->
+                        <span id="syncStatusBadge" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300" title="클라우드 실시간 동기화 중">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <span class="hidden sm:inline">동기화됨</span>
+                        </span>
+                    </div>
+                    <span class="text-[10px] sm:text-[11px] font-medium text-slate-400 dark:text-slate-500 block mt-0.5">나만의 AI 영감 놀이터</span>
+                </div>
+            </div>
+
+            <!-- 검색창 (PC/태블릿용) -->
+            <div class="hidden md:flex flex-1 max-w-md relative">
+                <i data-lucide="search" class="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-indigo-400"></i>
+                <input type="text" id="searchInputDesktop" placeholder="아이디어, 작업물, 책, 태그 검색..." 
+                    class="w-full pl-11 pr-4 py-2.5 rounded-2xl bg-slate-100/80 dark:bg-slate-800/80 border-2 border-transparent focus:border-indigo-400 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-indigo-500/10 text-sm transition-all outline-none">
+            </div>
+
+            <!-- 우측 액션 버튼들 -->
+            <div class="flex items-center gap-1.5 sm:gap-2.5">
+                <!-- 데이터 백업/복원 버튼 -->
+                <button onclick="openBackupModal()" class="p-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-700 transition-all active:scale-90" title="데이터 백업 및 복원">
+                    <i data-lucide="hard-drive-download" class="w-5 h-5 text-indigo-500 dark:text-indigo-400"></i>
+                </button>
+
+                <!-- 다크모드 토글 -->
+                <button id="themeToggle" class="p-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-700 transition-all active:scale-90" title="테마 변경">
+                    <i data-lucide="moon" class="w-5 h-5 hidden dark:block text-amber-300"></i>
+                    <i data-lucide="sun" class="w-5 h-5 block dark:hidden text-amber-500"></i>
+                </button>
+                
+                <!-- 새 항목 추가 버튼 (PC/태블릿) -->
+                <button onclick="openModal()" class="hidden sm:flex items-center gap-2 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:opacity-95 text-white px-5 py-2.5 rounded-2xl text-sm font-bold shadow-lg shadow-indigo-500/30 transition-all hover:-translate-y-0.5 active:scale-95">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                    <span>새로 기록하기</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 모바일 전용 검색창 -->
+        <div class="md:hidden px-4 pb-2.5">
+            <div class="relative">
+                <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-indigo-400"></i>
+                <input type="text" id="searchInputMobile" placeholder="아이디어, 작업물, 책, 태그 검색..." 
+                    class="w-full pl-10 pr-4 py-2 rounded-2xl bg-slate-100/90 dark:bg-slate-800/90 border border-transparent focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 text-base sm:text-sm outline-none">
+            </div>
+        </div>
+    </header>
+
+    <!-- 메인 컨텐츠 영역 -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-7">
+        
+        <!-- 빠른 아이디어 캡처 바 -->
+        <div class="mb-5 sm:mb-7 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 shadow-lg shadow-indigo-500/5 border-2 border-indigo-100 dark:border-slate-800 transition-all focus-within:border-amber-400 dark:focus-within:border-amber-500/60">
+            <form id="quickIdeaForm" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                <div class="flex-1 flex items-center gap-3">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-900/40 dark:to-orange-900/30 flex items-center justify-center shrink-0 shadow-inner">
+                        <span class="w-7 h-7 sm:w-8 sm:h-8 block animate-float" data-3d-icon="idea"></span>
+                    </div>
+                    <input type="text" id="quickIdeaInput" placeholder="번뜩이는 아이디어를 바로 적고 저장하세요!" 
+                        class="w-full bg-transparent border-none focus:ring-0 text-base sm:text-base font-medium placeholder-slate-400 outline-none" required>
+                </div>
+                <button type="submit" id="quickSaveBtn" class="w-full sm:w-auto px-5 py-2.5 sm:py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-xl sm:rounded-2xl text-sm font-bold shadow-md shadow-orange-500/25 transition-all active:scale-95 shrink-0">
+                    ⚡ 번개 저장
+                </button>
+            </form>
+        </div>
+
+        <!-- 카테고리 필터 탭 & 정렬 옵션 -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
+            <div class="hidden md:flex items-center gap-2.5 overflow-x-auto no-scrollbar" id="filterTabs">
+                <button onclick="setFilter('all')" data-filter="all" class="filter-btn active px-4 py-2.5 rounded-2xl text-sm font-bold transition-all whitespace-nowrap flex items-center gap-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md">
+                    <span class="w-5 h-5 inline-block" data-3d-icon="all"></span>
+                    <span>전체 보기</span>
+                    <span class="count-badge px-2 py-0.5 text-xs rounded-full bg-white/20 dark:bg-slate-900/15">0</span>
+                </button>
+                <button onclick="setFilter('idea')" data-filter="idea" class="filter-btn px-4 py-2.5 rounded-2xl text-sm font-bold transition-all whitespace-nowrap flex items-center gap-2 bg-white/80 dark:bg-slate-900/80 text-slate-700 dark:text-slate-200 border border-slate-200/80 dark:border-slate-800 hover:border-amber-400">
+                    <span class="w-5 h-5 inline-block" data-3d-icon="idea"></span>
+                    <span>아이디어 노트</span>
+                    <span class="count-badge px-2 py-0.5 text-xs rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300">0</span>
+                </button>
+                <button onclick="setFilter('creation')" data-filter="creation" class="filter-btn px-4 py-2.5 rounded-2xl text-sm font-bold transition-all whitespace-nowrap flex items-center gap-2 bg-white/80 dark:bg-slate-900/80 text-slate-700 dark:text-slate-200 border border-slate-200/80 dark:border-slate-800 hover:border-emerald-400">
+                    <span class="w-5 h-5 inline-block" data-3d-icon="creation"></span>
+                    <span>내 작업물</span>
+                    <span class="count-badge px-2 py-0.5 text-xs rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300">0</span>
+                </button>
+                <button onclick="setFilter('reference')" data-filter="reference" class="filter-btn px-4 py-2.5 rounded-2xl text-sm font-bold transition-all whitespace-nowrap flex items-center gap-2 bg-white/80 dark:bg-slate-900/80 text-slate-700 dark:text-slate-200 border border-slate-200/80 dark:border-slate-800 hover:border-rose-400">
+                    <span class="w-5 h-5 inline-block" data-3d-icon="reference"></span>
+                    <span>레퍼런스</span>
+                    <span class="count-badge px-2 py-0.5 text-xs rounded-full bg-rose-100 text-rose-800 dark:bg-rose-900/50 dark:text-rose-300">0</span>
+                </button>
+            </div>
+
+            <div class="flex items-center justify-between md:justify-end gap-2 w-full md:w-auto">
+                <span id="mobileCurrentCategoryTitle" class="md:hidden text-base font-extrabold text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
+                    📦 전체 기록 <span class="text-xs font-bold text-indigo-600 dark:text-indigo-400">(0)</span>
+                </span>
+                <select id="sortSelect" onchange="renderItems()" class="bg-white/90 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-semibold rounded-xl sm:rounded-2xl px-3 sm:px-4 py-2 sm:py-2.5 outline-none focus:border-indigo-500 shadow-sm cursor-pointer">
+                    <option value="newest">✨ 최신순</option>
+                    <option value="oldest">⏳ 오래된순</option>
+                    <option value="favorite">⭐ 즐겨찾기 우선</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- 인기 태그 클라우드 필터 바 -->
+        <div id="tagCloudContainer" class="hidden items-center gap-2 overflow-x-auto no-scrollbar pb-3 mb-4">
+            <span class="text-xs font-bold text-slate-400 shrink-0 flex items-center gap-1">
+                <i data-lucide="hash" class="w-3.5 h-3.5"></i> 인기 태그:
+            </span>
+            <div id="tagCloudList" class="flex items-center gap-1.5"></div>
+        </div>
+
+        <!-- 로딩 스켈레톤 -->
+        <div id="loadingState" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+            <div class="h-52 rounded-3xl bg-white/60 dark:bg-slate-900/60 animate-pulse border border-slate-200/50 dark:border-slate-800"></div>
+            <div class="h-52 rounded-3xl bg-white/60 dark:bg-slate-900/60 animate-pulse border border-slate-200/50 dark:border-slate-800"></div>
+            <div class="h-52 rounded-3xl bg-white/60 dark:bg-slate-900/60 animate-pulse border border-slate-200/50 dark:border-slate-800 hidden sm:block"></div>
+            <div class="h-52 rounded-3xl bg-white/60 dark:bg-slate-900/60 animate-pulse border border-slate-200/50 dark:border-slate-800 hidden lg:block"></div>
+        </div>
+
+        <!-- 아이템 그리드 컨테이너 -->
+        <div id="itemsGrid" class="hidden grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6"></div>
+
+        <!-- 검색/필터 결과 없음 안내 -->
+        <div id="emptyState" class="hidden flex-col items-center justify-center py-16 sm:py-20 px-4 text-center bg-white/60 dark:bg-slate-900/60 rounded-3xl border border-dashed border-slate-300 dark:border-slate-800">
+            <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-gradient-to-tr from-indigo-100 to-purple-100 dark:from-indigo-900/40 dark:to-purple-900/40 flex items-center justify-center mb-4 animate-float">
+                <span class="w-10 h-10 sm:w-12 sm:h-12 block" data-3d-icon="all"></span>
+            </div>
+            <h3 class="text-lg sm:text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">표시할 기록이 없어요!</h3>
+            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-sm mb-6">검색어를 지우거나 번뜩이는 아이디어, 멋진 작업물, 참고하고 싶은 유튜브 영상을 채워보세요.</p>
+            <div class="flex flex-wrap justify-center gap-2">
+                <button onclick="resetAllFilters()" class="px-4 py-2.5 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-2xl text-sm font-bold transition-all">
+                    필터 초기화
+                </button>
+                <button onclick="openModal()" class="px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-95 text-white rounded-2xl text-sm font-bold shadow-lg shadow-indigo-500/25 transition-all active:scale-95">
+                    새 보물 추가하기
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- 모바일 전용 우측 하단 플로팅 추가 버튼 (FAB) -->
+    <button onclick="openModal()" class="sm:hidden fixed right-4 bottom-20 z-40 w-14 h-14 rounded-full bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-600 text-white shadow-xl shadow-indigo-500/40 flex items-center justify-center active:scale-90 transition-transform" aria-label="새로 기록하기">
+        <i data-lucide="plus" class="w-7 h-7 stroke-[2.5]"></i>
+    </button>
+
+    <!-- 모바일 전용 하단 고정 탭 네비게이션 바 -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-t border-slate-200/80 dark:border-slate-800/80 pb-safe">
+        <div class="grid grid-cols-4 h-16">
+            <button onclick="setFilter('all')" data-filter="all" class="mobile-nav-btn active flex flex-col items-center justify-center gap-1 text-indigo-600 dark:text-indigo-400 transition-colors">
+                <span class="w-6 h-6 block" data-3d-icon="all"></span>
+                <span class="text-[11px] font-bold">전체</span>
+            </button>
+            <button onclick="setFilter('idea')" data-filter="idea" class="mobile-nav-btn flex flex-col items-center justify-center gap-1 text-slate-500 dark:text-slate-400 transition-colors">
+                <span class="w-6 h-6 block" data-3d-icon="idea"></span>
+                <span class="text-[11px] font-semibold">아이디어</span>
+            </button>
+            <button onclick="setFilter('creation')" data-filter="creation" class="mobile-nav-btn flex flex-col items-center justify-center gap-1 text-slate-500 dark:text-slate-400 transition-colors">
+                <span class="w-6 h-6 block" data-3d-icon="creation"></span>
+                <span class="text-[11px] font-semibold">내 작업물</span>
+            </button>
+            <button onclick="setFilter('reference')" data-filter="reference" class="mobile-nav-btn flex flex-col items-center justify-center gap-1 text-slate-500 dark:text-slate-400 transition-colors">
+                <span class="w-6 h-6 block" data-3d-icon="reference"></span>
+                <span class="text-[11px] font-semibold">레퍼런스</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- 항목 추가 / 수정 모달 -->
+    <div id="itemModal" class="fixed inset-0 z-50 hidden items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-md sm:p-4 overflow-y-auto">
+        <div class="bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-3xl max-w-lg w-full p-5 sm:p-7 shadow-2xl border-t sm:border border-slate-200 dark:border-slate-800 transform transition-all max-h-[92vh] overflow-y-auto">
+            <div class="w-12 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto mb-4 sm:hidden"></div>
+            <div class="flex items-center justify-between mb-4 sm:mb-5">
+                <h2 id="modalTitle" class="text-lg sm:text-xl font-extrabold">새로운 기록 추가</h2>
+                <button onclick="closeModal()" class="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <form id="itemForm" class="space-y-4">
+                <input type="hidden" id="itemId">
+                
+                <!-- 카테고리 선택 -->
+                <div>
+                    <label class="block text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">어떤 종류의 기록인가요?</label>
+                    <div class="grid grid-cols-3 gap-2.5 sm:gap-3">
+                        <label class="cursor-pointer group">
+                            <input type="radio" name="category" value="idea" class="peer sr-only" checked onchange="toggleDynamicFields()">
+                            <div class="p-2.5 sm:p-3 rounded-2xl border-2 border-slate-200 dark:border-slate-800 text-center peer-checked:border-amber-400 peer-checked:bg-amber-50/80 dark:peer-checked:bg-amber-950/40 peer-checked:shadow-md transition-all">
+                                <span class="w-7 h-7 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-1.5 block" data-3d-icon="idea"></span>
+                                <span class="text-xs font-bold block text-slate-700 dark:text-slate-200">아이디어</span>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer group">
+                            <input type="radio" name="category" value="creation" class="peer sr-only" onchange="toggleDynamicFields()">
+                            <div class="p-2.5 sm:p-3 rounded-2xl border-2 border-slate-200 dark:border-slate-800 text-center peer-checked:border-emerald-400 peer-checked:bg-emerald-50/80 dark:peer-checked:bg-emerald-950/40 peer-checked:shadow-md transition-all">
+                                <span class="w-7 h-7 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-1.5 block" data-3d-icon="creation"></span>
+                                <span class="text-xs font-bold block text-slate-700 dark:text-slate-200">내 작업물</span>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer group">
+                            <input type="radio" name="category" value="reference" class="peer sr-only" onchange="toggleDynamicFields()">
+                            <div class="p-2.5 sm:p-3 rounded-2xl border-2 border-slate-200 dark:border-slate-800 text-center peer-checked:border-rose-400 peer-checked:bg-rose-50/80 dark:peer-checked:bg-rose-950/40 peer-checked:shadow-md transition-all">
+                                <span class="w-7 h-7 sm:w-8 sm:h-8 mx-auto mb-1 sm:mb-1.5 block" data-3d-icon="reference"></span>
+                                <span class="text-xs font-bold block text-slate-700 dark:text-slate-200">레퍼런스</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 세부 유형 -->
+                <div id="subTypeContainer" class="hidden">
+                    <label class="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">세부 유형</label>
+                    <select id="itemSubType" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-base sm:text-sm outline-none focus:border-indigo-500"></select>
+                </div>
+
+                <!-- 제목 -->
+                <div>
+                    <label class="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">제목 <span class="text-rose-500">*</span></label>
+                    <input type="text" id="itemTitle" required placeholder="예: 나만의 가계부 웹앱 아이디어" 
+                        class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-base sm:text-sm outline-none focus:border-indigo-500">
+                </div>
+
+                <!-- URL / 링크 -->
+                <div id="urlContainer">
+                    <label class="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">관련 링크 (URL) <span class="text-xs text-slate-400 font-normal">(선택)</span></label>
+                    <input type="url" id="itemUrl" placeholder="https://youtube.com/... 또는 배포된 웹페이지 주소" 
+                        class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-base sm:text-sm outline-none focus:border-indigo-500">
+                </div>
+
+                <!-- 내용 / 메모 -->
+                <div>
+                    <label class="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">상세 메모</label>
+                    <textarea id="itemContent" rows="4" placeholder="핵심 내용, 느낀 점, 구현할 기능 등을 자유롭게 적어보세요..." 
+                        class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-base sm:text-sm outline-none focus:border-indigo-500 resize-none"></textarea>
+                </div>
+
+                <!-- 태그 + AI 자동 태그 추출 버튼 -->
+                <div>
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label class="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">태그 <span class="text-xs text-slate-400 font-normal">(쉼표로 구분)</span></label>
+                        <button type="button" id="aiAutoTagBtn" onclick="generateAITags()" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-gradient-to-r from-purple-500/15 to-indigo-500/15 hover:from-purple-500/25 hover:to-indigo-500/25 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 transition-all active:scale-95">
+                            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                            <span>AI 자동 태그 추천</span>
+                        </button>
+                    </div>
+                    <input type="text" id="itemTags" placeholder="예: 웹개발, 디자인, 자기계발, 유튜브" 
+                        class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-base sm:text-sm outline-none focus:border-indigo-500">
+                </div>
+
+                <!-- 버튼 영역 -->
+                <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800 pb-safe">
+                    <button type="button" onclick="closeModal()" class="flex-1 sm:flex-none px-4 py-3 sm:py-2.5 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 sm:bg-transparent dark:bg-slate-800 sm:dark:bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                        취소
+                    </button>
+                    <button type="submit" id="saveItemBtn" class="flex-1 sm:flex-none px-6 py-3 sm:py-2.5 rounded-xl text-sm font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md transition-colors">
+                        저장하기
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 상세 보기 모달 -->
+    <div id="detailModal" class="fixed inset-0 z-50 hidden items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-sm sm:p-4 overflow-y-auto">
+        <div class="bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-3xl max-w-xl w-full p-5 sm:p-6 shadow-2xl border-t sm:border border-slate-200 dark:border-slate-800 max-h-[92vh] overflow-y-auto">
+            <div class="w-12 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto mb-4 sm:hidden"></div>
+            <div class="flex items-start justify-between gap-4 mb-3 sm:mb-4">
+                <div id="detailBadge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium"></div>
+                <button onclick="closeDetailModal()" class="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <h2 id="detailTitle" class="text-xl sm:text-2xl font-bold mb-1.5 sm:mb-2 leading-snug"></h2>
+            <p id="detailDate" class="text-xs text-slate-400 mb-4"></p>
+
+            <!-- AI 아이디어 발전소 & 작업물 승격 액션 바 (아이디어 노트일 때 활성화) -->
+            <div id="ideaActionsBar" class="hidden flex-wrap gap-2 mb-4 p-3 rounded-2xl bg-gradient-to-r from-indigo-50/90 via-purple-50/90 to-amber-50/90 dark:from-indigo-950/50 dark:via-purple-950/40 dark:to-amber-950/30 border border-indigo-100 dark:border-indigo-900/60">
+                <button type="button" id="aiExpandBtn" class="flex-1 min-w-[140px] flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-95 text-white text-xs sm:text-sm font-bold shadow-sm transition-all active:scale-95">
+                    <i data-lucide="sparkles" class="w-4 h-4"></i>
+                    <span>AI로 기획안 구체화</span>
+                </button>
+                <button type="button" id="promoteToCreationBtn" class="flex-1 min-w-[140px] flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold shadow-sm transition-all active:scale-95">
+                    <i data-lucide="rocket" class="w-4 h-4"></i>
+                    <span>작업물로 승격시키기</span>
+                </button>
+            </div>
+            
+            <!-- 유튜브 임베드 영역 -->
+            <div id="youtubeEmbedContainer" class="hidden mb-4 sm:mb-5 rounded-2xl overflow-hidden aspect-video bg-black shadow-md"></div>
+
+            <!-- 외부 링크 버튼 -->
+            <div id="detailLinkContainer" class="hidden mb-4 sm:mb-5">
+                <a id="detailLink" href="#" target="_blank" rel="noopener noreferrer" 
+                   class="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 text-sm font-medium transition-colors w-full justify-between">
+                    <span class="truncate" id="detailLinkText"></span>
+                    <i data-lucide="external-link" class="w-4 h-4 shrink-0"></i>
+                </a>
+            </div>
+
+            <div class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 mb-4 sm:mb-5">
+                <p id="detailContent" class="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed"></p>
+            </div>
+
+            <div id="detailTags" class="flex flex-wrap gap-1.5 mb-5 sm:mb-6"></div>
+
+            <div class="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800 pb-safe">
+                <button id="detailDeleteBtn" class="flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-sm font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    <span>삭제</span>
+                </button>
+                <div class="flex items-center gap-2">
+                    <button id="detailEditBtn" class="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                        <i data-lucide="edit-3" class="w-4 h-4"></i>
+                        <span>수정</span>
+                    </button>
+                    <button onclick="closeDetailModal()" class="px-5 py-2.5 rounded-xl text-sm font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors">
+                        닫기
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 작업물 승격 전용 모달 -->
+    <div id="promoteModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-950/60 flex items-center justify-center mb-4">
+                <span class="w-8 h-8 block" data-3d-icon="creation"></span>
+            </div>
+            <h3 class="text-lg font-extrabold mb-1.5">🚀 내 작업물로 승격시키기</h3>
+            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-4">아이디어가 실제 결과물로 탄생했군요! 완성된 웹페이지나 파일 링크를 연결해 주세요.</p>
+            <form id="promoteForm" class="space-y-3.5">
+                <input type="hidden" id="promoteItemId">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">작업물 유형</label>
+                    <select id="promoteSubType" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm outline-none">
+                        <option value="웹페이지">🌐 웹페이지 / 사이트</option>
+                        <option value="앱/프로그램">📱 앱 / 프로그램</option>
+                        <option value="문서/파일">📁 문서 / 디자인 파일</option>
+                        <option value="기타 작업물">✨ 기타 작업물</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">완성된 결과물 링크 (URL)</label>
+                    <input type="url" id="promoteUrl" placeholder="https://... (비워두어도 승격 가능)" 
+                        class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm outline-none focus:border-emerald-500">
+                </div>
+                <div class="flex items-center justify-end gap-2 pt-2">
+                    <button type="button" onclick="closePromoteModal()" class="px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">취소</button>
+                    <button type="submit" class="px-5 py-2.5 rounded-xl text-sm font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-md">승격 완료!</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 데이터 백업 및 복원 모달 -->
+    <div id="backupModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-lg font-extrabold flex items-center gap-2">
+                    <i data-lucide="shield-check" class="w-5 h-5 text-indigo-500"></i>
+                    <span>데이터 백업 & 복원</span>
+                </h3>
+                <button onclick="closeBackupModal()" class="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-5 leading-relaxed">
+                모든 기록은 클라우드에 자동 동기화됩니다. 만약을 대비해 JSON 파일로 내 기기에 별도 백업하거나 기존 백업 파일을 불러올 수 있습니다.
+            </p>
+            <div class="space-y-3">
+                <button onclick="exportDataJSON()" class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold shadow-md transition-all">
+                    <i data-lucide="download" class="w-4 h-4"></i>
+                    <span>전체 기록 백업 파일 다운로드 (.json)</span>
+                </button>
+                <label class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-sm font-bold cursor-pointer transition-all">
+                    <i data-lucide="upload" class="w-4 h-4"></i>
+                    <span>백업 파일에서 복원하기 (.json)</span>
+                    <input type="file" accept=".json" class="hidden" onchange="importDataJSON(event)">
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- 토스트 알림 -->
+    <div id="toast" class="fixed bottom-20 md:bottom-6 left-1/2 -translate-x-1/2 md:left-auto md:right-6 md:translate-x-0 z-50 transform translate-y-24 opacity-0 transition-all duration-300 bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-4 py-3 rounded-2xl shadow-xl flex items-center gap-2.5 text-sm font-semibold whitespace-nowrap">
+        <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400 dark:text-emerald-600 shrink-0"></i>
+        <span id="toastMessage">저장되었습니다.</span>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, updateDoc, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Firebase 초기화
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-idea-vault';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+
+        let db = null;
+        let auth = null;
+        let currentUser = null;
+        let unsubscribeSnapshot = null;
+
+        // 3D 스타일 커스텀 SVG 아이콘 세트
+        const icons3D = {
+            all: `<svg viewBox="0 0 64 64" fill="none" class="w-full h-full icon-3d-shadow">
+                <defs>
+                    <linearGradient id="gAllTop" x1="12" y1="8" x2="52" y2="32" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#A5B4FC"/><stop offset="100%" stop-color="#6366F1"/></linearGradient>
+                    <linearGradient id="gAllLeft" x1="12" y1="20" x2="32" y2="56" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#818CF8"/><stop offset="100%" stop-color="#4338CA"/></linearGradient>
+                    <linearGradient id="gAllRight" x1="32" y1="20" x2="52" y2="56" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#6366F1"/><stop offset="100%" stop-color="#312E81"/></linearGradient>
+                </defs>
+                <path d="M32 8L52 20L32 32L12 20L32 8Z" fill="url(#gAllTop)"/>
+                <path d="M12 20L32 32V56L12 44V20Z" fill="url(#gAllLeft)"/>
+                <path d="M52 20L32 32V56L52 44V20Z" fill="url(#gAllRight)"/>
+                <circle cx="32" cy="20" r="4" fill="#EEF2FF"/>
+            </svg>`,
+            idea: `<svg viewBox="0 0 64 64" fill="none" class="w-full h-full icon-3d-shadow">
+                <defs>
+                    <radialGradient id="gBulb" cx="35%" cy="30%" r="70%"><stop offset="0%" stop-color="#FEF9C3"/><stop offset="50%" stop-color="#FACC15"/><stop offset="100%" stop-color="#EA580C"/></radialGradient>
+                    <linearGradient id="gBase" x1="22" y1="46" x2="42" y2="58" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#94A3B8"/><stop offset="100%" stop-color="#475569"/></linearGradient>
+                </defs>
+                <path d="M32 8C20.954 8 12 16.954 12 28C12 35.18 15.792 41.472 21.5 45V48C21.5 49.657 22.843 51 24.5 51H39.5C41.157 51 42.5 49.657 42.5 48V45C48.208 41.472 52 35.18 52 28C52 16.954 43.046 8 32 8Z" fill="url(#gBulb)"/>
+                <rect x="24" y="51" width="16" height="7" rx="3.5" fill="url(#gBase)"/>
+                <ellipse cx="25" cy="21" rx="5" ry="3" transform="rotate(-30 25 21)" fill="#FFFFFF" fill-opacity="0.75"/>
+            </svg>`,
+            creation: `<svg viewBox="0 0 64 64" fill="none" class="w-full h-full icon-3d-shadow">
+                <defs>
+                    <linearGradient id="gRocket" x1="16" y1="12" x2="48" y2="48" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#6EE7B7"/><stop offset="100%" stop-color="#059669"/></linearGradient>
+                    <linearGradient id="gFlame" x1="14" y1="42" x2="24" y2="54" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#FDE047"/><stop offset="100%" stop-color="#EF4444"/></linearGradient>
+                </defs>
+                <path d="M16 42C12 46 10 54 10 54C10 54 18 52 22 48L16 42Z" fill="url(#gFlame)"/>
+                <path d="M52 12C40 12 26 18 18 32L32 46C46 38 52 24 52 12Z" fill="url(#gRocket)"/>
+                <path d="M18 32L10 36L16 42L18 32Z" fill="#047857"/>
+                <path d="M32 46L28 54L22 48L32 46Z" fill="#047857"/>
+                <circle cx="37" cy="27" r="5" fill="#ECFDF5" stroke="#047857" stroke-width="2"/>
+            </svg>`,
+            reference: `<svg viewBox="0 0 64 64" fill="none" class="w-full h-full icon-3d-shadow">
+                <defs>
+                    <linearGradient id="gBook" x1="14" y1="10" x2="50" y2="54" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#FDA4AF"/><stop offset="100%" stop-color="#E11D48"/></linearGradient>
+                </defs>
+                <rect x="14" y="10" width="36" height="44" rx="6" fill="url(#gBook)"/>
+                <path d="M14 16C14 12.686 16.686 10 20 10H22V54H20C16.686 54 14 51.314 14 48V16Z" fill="#9F1239"/>
+                <path d="M36 10H44V28L40 24L36 28V10Z" fill="#FACC15"/>
+                <rect x="26" y="34" width="16" height="4" rx="2" fill="#FFE4E6" fill-opacity="0.8"/>
+            </svg>`,
+            starActive: `<svg viewBox="0 0 64 64" fill="none" class="w-full h-full icon-3d-shadow">
+                <defs>
+                    <linearGradient id="gStar" x1="12" y1="10" x2="52" y2="54" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#FEF08A"/><stop offset="50%" stop-color="#FACC15"/><stop offset="100%" stop-color="#D97706"/></linearGradient>
+                </defs>
+                <path d="M32 8L39.4 23L56 25.4L44 37.1L46.8 53.6L32 45.8L17.2 53.6L20 37.1L8 25.4L24.6 23L32 8Z" fill="url(#gStar)"/>
+            </svg>`,
+            starInactive: `<svg viewBox="0 0 64 64" fill="none" class="w-full h-full">
+                <path d="M32 8L39.4 23L56 25.4L44 37.1L46.8 53.6L32 45.8L17.2 53.6L20 37.1L8 25.4L24.6 23L32 8Z" stroke="currentColor" stroke-width="4" stroke-linejoin="round" class="text-slate-300 dark:text-slate-600"/>
+            </svg>`
+        };
+
+        // 전역 상태
+        let items = [];
+        let currentFilter = 'all';
+        let selectedTagFilter = '';
+        let searchQuery = '';
+
+        // Firestore 인증 및 실시간 구독 초기화
+        async function initCloudSync() {
+            if (!firebaseConfig) {
+                items = [];
+                onDataLoaded();
+                return;
+            }
+
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                onAuthStateChanged(auth, (user) => {
+                    if (!user) return;
+                    currentUser = user;
+                    subscribeUserItems(user.uid);
+                });
+            } catch (error) {
+                console.error('클라우드 연결 오류:', error);
+                items = [];
+                onDataLoaded();
+            }
+        }
+
+        // Firestore 사용자 컬렉션 실시간 구독 (RULE 1 & RULE 2 준수)
+        function subscribeUserItems(userId) {
+            if (unsubscribeSnapshot) unsubscribeSnapshot();
+            const itemsColRef = collection(db, 'artifacts', appId, 'users', userId, 'ideaVaultItems');
+
+            unsubscribeSnapshot = onSnapshot(itemsColRef, (snapshot) => {
+                const loaded = [];
+                snapshot.forEach((docSnap) => {
+                    loaded.push({ id: docSnap.id, ...docSnap.data() });
+                });
+                items = loaded;
+                onDataLoaded();
+            }, (error) => {
+                console.error('실시간 동기화 오류:', error);
+                showToast('⚠️ 동기화 중 일시적인 오류가 발생했습니다.');
+            });
+        }
+
+        function onDataLoaded() {
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('itemsGrid').classList.remove('hidden');
+            document.getElementById('itemsGrid').classList.add('grid');
+            updateCounts();
+            renderTagCloud();
+            renderItems();
+        }
+
+        // Firestore 항목 저장/업데이트 헬퍼
+        async function saveItemToCloud(item) {
+            if (!currentUser || !db) {
+                const idx = items.findIndex(i => i.id === item.id);
+                if (idx !== -1) items[idx] = item;
+                else items.unshift(item);
+                onDataLoaded();
+                return;
+            }
+            const docRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'ideaVaultItems', item.id);
+            await setDoc(docRef, item);
+        }
+
+        // Firestore 항목 부분 수정 헬퍼
+        async function updateItemInCloud(id, partialData) {
+            if (!currentUser || !db) {
+                const idx = items.findIndex(i => i.id === id);
+                if (idx !== -1) items[idx] = { ...items[idx], ...partialData };
+                onDataLoaded();
+                return;
+            }
+            const docRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'ideaVaultItems', id);
+            await updateDoc(docRef, partialData);
+        }
+
+        // Firestore 항목 삭제 헬퍼
+        async function deleteItemFromCloud(id) {
+            if (!currentUser || !db) {
+                items = items.filter(i => i.id !== id);
+                onDataLoaded();
+                return;
+            }
+            const docRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'ideaVaultItems', id);
+            await deleteDoc(docRef);
+        }
+
+        // Gemini API 호출 헬퍼 (지수 백오프 적용)
+        async function callGeminiAPI(promptText) {
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: [{ parts: [{ text: promptText }] }]
+            };
+
+            const delays = [1000, 2000, 4000];
+            for (let attempt = 0; attempt <= delays.length; attempt++) {
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    const result = await response.json();
+                    const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if (text) return text.trim();
+                    throw new Error('Empty response');
+                } catch (err) {
+                    if (attempt === delays.length) throw err;
+                    await new Promise(res => setTimeout(res, delays[attempt]));
+                }
+            }
+        }
+
+        // ✨ AI 기능 1: 자동 태그 추천
+        window.generateAITags = async function() {
+            const title = document.getElementById('itemTitle').value.trim();
+            const content = document.getElementById('itemContent').value.trim();
+            if (!title && !content) {
+                showToast('⚠️ 제목이나 메모 내용을 먼저 입력해 주세요!');
+                return;
+            }
+
+            const btn = document.getElementById('aiAutoTagBtn');
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i><span>분석 중...</span>`;
+            lucide.createIcons();
+
+            try {
+                const prompt = `다음 메모의 핵심 주제를 나타내는 한국어 해시태그 3~5개를 추출해줘. 쉼표(,)로만 구분해서 태그 단어만 출력해줘 (기호 # 없이).\n제목: ${title}\n내용: ${content}`;
+                const result = await callGeminiAPI(prompt);
+                const cleanTags = result.replace(/#/g, '').split(',').map(t => t.trim()).filter(Boolean).join(', ');
+                document.getElementById('itemTags').value = cleanTags;
+                showToast('✨ AI가 맞춤 태그를 추천했습니다!');
+            } catch (e) {
+                showToast('⚠️ 태그 생성에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+                lucide.createIcons();
+            }
+        };
+
+        // ✨ AI 기능 2: 아이디어 기획안 구체화
+        async function expandIdeaWithAI(id) {
+            const item = items.find(i => i.id === id);
+            if (!item) return;
+
+            const btn = document.getElementById('aiExpandBtn');
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span>AI 기획안 작성 중...</span>`;
+            lucide.createIcons();
+
+            try {
+                const prompt = `당신은 유능한 프로덕트 기획자입니다. 아래 아이디어를 바탕으로 실행 가능한 미니 기획안을 한국어로 깔끔하게 작성해 주세요.\n\n[아이디어 제목]: ${item.title}\n[기존 메모]: ${item.content || '없음'}\n\n다음 3가지 항목으로 간결하고 명확하게 정리해 주세요:\n1. 🎯 핵심 가치 & 타겟 사용자\n2. ⚙️ 주요 핵심 기능 (3가지)\n3. 🚀 첫 번째 실행 단계 (MVP)`;
+                const aiDraft = await callGeminiAPI(prompt);
+
+                const updatedContent = item.content
+                    ? `${item.content}\n\n━━━━━━━━━━━━━━━\n✨ [AI 기획안 제안]\n${aiDraft}`
+                    : `✨ [AI 기획안 제안]\n${aiDraft}`;
+
+                await updateItemInCloud(item.id, { content: updatedContent });
+                document.getElementById('detailContent').textContent = updatedContent;
+                showToast('🪄 AI가 아이디어를 멋진 기획안으로 확장했습니다!');
+            } catch (e) {
+                showToast('⚠️ AI 기획안 생성 중 오류가 발생했습니다.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+                lucide.createIcons();
+            }
+        }
+
+        // 🚀 작업물 승격 모달 열기 & 처리
+        function openPromoteModal(id) {
+            document.getElementById('promoteItemId').value = id;
+            document.getElementById('promoteUrl').value = '';
+            const modal = document.getElementById('promoteModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        window.closePromoteModal = function() {
+            const modal = document.getElementById('promoteModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        };
+
+        document.getElementById('promoteForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('promoteItemId').value;
+            const subType = document.getElementById('promoteSubType').value;
+            const url = document.getElementById('promoteUrl').value.trim();
+
+            await updateItemInCloud(id, {
+                category: 'creation',
+                subType: subType,
+                url: url
+            });
+
+            closePromoteModal();
+            closeDetailModal();
+            showToast('🚀 축하합니다! 아이디어가 내 작업물로 승격되었습니다!');
+        });
+
+        // 🏷️ 인기 태그 클라우드 렌더링 및 필터링
+        function renderTagCloud() {
+            const tagCounts = {};
+            items.forEach(item => {
+                (item.tags || []).forEach(tag => {
+                    tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+                });
+            });
+
+            const sortedTags = Object.entries(tagCounts)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 12);
+
+            const container = document.getElementById('tagCloudContainer');
+            const listEl = document.getElementById('tagCloudList');
+
+            if (sortedTags.length === 0) {
+                container.classList.add('hidden');
+                container.classList.remove('flex');
+                return;
+            }
+
+            container.classList.remove('hidden');
+            container.classList.add('flex');
+
+            listEl.innerHTML = sortedTags.map(([tag, count]) => {
+                const isSelected = selectedTagFilter === tag;
+                const activeClass = isSelected
+                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                    : 'bg-white/80 dark:bg-slate-900/80 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:border-indigo-400';
+                return `
+                    <button onclick="toggleTagFilter('${escapeHtml(tag)}')" class="px-2.5 py-1 rounded-xl text-xs font-semibold border transition-all whitespace-nowrap ${activeClass}">
+                        #${escapeHtml(tag)} <span class="opacity-70 text-[10px]">${count}</span>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        window.toggleTagFilter = function(tag) {
+            selectedTagFilter = (selectedTagFilter === tag) ? '' : tag;
+            renderTagCloud();
+            renderItems();
+        };
+
+        window.resetAllFilters = function() {
+            selectedTagFilter = '';
+            searchQuery = '';
+            document.getElementById('searchInputDesktop').value = '';
+            document.getElementById('searchInputMobile').value = '';
+            setFilter('all');
+            renderTagCloud();
+        };
+
+        // 📦 JSON 백업 & 복원 기능
+        window.openBackupModal = function() {
+            const modal = document.getElementById('backupModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        };
+
+        window.closeBackupModal = function() {
+            const modal = document.getElementById('backupModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        };
+
+        window.exportDataJSON = function() {
+            const dataStr = JSON.stringify(items, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const dateStr = new Date().toISOString().slice(0, 10);
+            a.href = url;
+            a.download = `IdeaVault_Backup_${dateStr}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('📦 백업 파일이 다운로드되었습니다!');
+        };
+
+        window.importDataJSON = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (!Array.isArray(imported)) throw new Error('Invalid format');
+                    for (const item of imported) {
+                        if (item.id && item.title) {
+                            await saveItemToCloud(item);
+                        }
+                    }
+                    closeBackupModal();
+                    showToast(`🎉 ${imported.length}개의 기록이 성공적으로 복원되었습니다!`);
+                } catch (err) {
+                    showToast('⚠️ 올바른 백업 JSON 파일이 아닙니다.');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        };
+
+        // 3D 아이콘 주입
+        function inject3DIcons() {
+            document.querySelectorAll('[data-3d-icon]').forEach(el => {
+                const type = el.getAttribute('data-3d-icon');
+                if (icons3D[type]) {
+                    el.innerHTML = icons3D[type];
+                }
+            });
+        }
+
+        function getYoutubeId(url) {
+            if (!url) return null;
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|shorts\/)([^#&?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function formatDate(timestamp) {
+            const d = new Date(timestamp);
+            return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
+        }
+
+        function updateCounts() {
+            const counts = {
+                all: items.length,
+                idea: items.filter(i => i.category === 'idea').length,
+                creation: items.filter(i => i.category === 'creation').length,
+                reference: items.filter(i => i.category === 'reference').length
+            };
+
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                const filter = btn.dataset.filter;
+                const badge = btn.querySelector('.count-badge');
+                if (badge) badge.textContent = counts[filter];
+            });
+
+            const filterLabels = {
+                all: '📦 전체 기록',
+                idea: '💡 아이디어 노트',
+                creation: '🚀 내 작업물',
+                reference: '📕 레퍼런스'
+            };
+            const mobileTitleEl = document.getElementById('mobileCurrentCategoryTitle');
+            if (mobileTitleEl) {
+                mobileTitleEl.innerHTML = `${filterLabels[currentFilter]} <span class="text-xs font-bold text-indigo-600 dark:text-indigo-400">(${counts[currentFilter]})</span>`;
+            }
+        }
+
+        window.setFilter = function(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                if (btn.dataset.filter === filter) {
+                    btn.className = 'filter-btn active px-4 py-2.5 rounded-2xl text-sm font-bold transition-all whitespace-nowrap flex items-center gap-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md scale-[1.02]';
+                } else {
+                    btn.className = 'filter-btn px-4 py-2.5 rounded-2xl text-sm font-bold transition-all whitespace-nowrap flex items-center gap-2 bg-white/80 dark:bg-slate-900/80 text-slate-700 dark:text-slate-200 border border-slate-200/80 dark:border-slate-800 hover:border-indigo-400';
+                }
+            });
+
+            document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
+                if (btn.dataset.filter === filter) {
+                    btn.className = 'mobile-nav-btn active flex flex-col items-center justify-center gap-1 text-indigo-600 dark:text-indigo-400 transition-colors scale-105';
+                    btn.querySelector('span:last-child').classList.add('font-extrabold');
+                } else {
+                    btn.className = 'mobile-nav-btn flex flex-col items-center justify-center gap-1 text-slate-400 dark:text-slate-500 transition-colors';
+                    btn.querySelector('span:last-child').classList.remove('font-extrabold');
+                }
+            });
+
+            updateCounts();
+            renderItems();
+        };
+
+        window.renderItems = function() {
+            const grid = document.getElementById('itemsGrid');
+            const emptyState = document.getElementById('emptyState');
+            const sortBy = document.getElementById('sortSelect').value;
+
+            let filtered = items.filter(item => {
+                const matchesCategory = currentFilter === 'all' || item.category === currentFilter;
+                const matchesTag = !selectedTagFilter || (item.tags && item.tags.includes(selectedTagFilter));
+                const q = searchQuery.toLowerCase().trim();
+                const matchesSearch = !q ||
+                    item.title.toLowerCase().includes(q) ||
+                    (item.content && item.content.toLowerCase().includes(q)) ||
+                    (item.tags && item.tags.some(t => t.toLowerCase().includes(q)));
+                return matchesCategory && matchesTag && matchesSearch;
+            });
+
+            filtered.sort((a, b) => {
+                if (sortBy === 'favorite') {
+                    if (a.favorite !== b.favorite) return b.favorite ? 1 : -1;
+                    return b.createdAt - a.createdAt;
+                } else if (sortBy === 'oldest') {
+                    return a.createdAt - b.createdAt;
+                }
+                return b.createdAt - a.createdAt;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                emptyState.classList.add('flex');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            emptyState.classList.remove('flex');
+
+            const catConfig = {
+                idea: {
+                    label: '아이디어',
+                    topBar: 'from-amber-400 to-orange-500',
+                    badgeBg: 'bg-amber-100/80 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300',
+                    icon: icons3D.idea
+                },
+                creation: {
+                    label: '내 작업물',
+                    topBar: 'from-emerald-400 to-teal-500',
+                    badgeBg: 'bg-emerald-100/80 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300',
+                    icon: icons3D.creation
+                },
+                reference: {
+                    label: '레퍼런스',
+                    topBar: 'from-rose-400 to-pink-500',
+                    badgeBg: 'bg-rose-100/80 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300',
+                    icon: icons3D.reference
+                }
+            };
+
+            grid.innerHTML = filtered.map(item => {
+                const cfg = catConfig[item.category] || catConfig.idea;
+                const ytId = getYoutubeId(item.url);
+                const subLabel = item.subType ? ` · ${escapeHtml(item.subType)}` : '';
+
+                const thumbnailHtml = ytId ? `
+                    <div onclick="openDetailModal('${item.id}')" class="relative aspect-video rounded-2xl overflow-hidden mb-3 bg-slate-900 cursor-pointer group/thumb">
+                        <img src="https://img.youtube.com/vi/${ytId}/mqdefault.jpg" alt="유튜브 썸네일" 
+                             onerror="this.src='https://placehold.co/640x360/1e293b/ffffff?text=YouTube+Video'"
+                             class="w-full h-full object-cover group-hover/thumb:scale-105 transition-transform duration-300">
+                        <div class="absolute inset-0 bg-black/25 flex items-center justify-center group-hover/thumb:bg-black/40 transition-colors">
+                            <div class="w-11 h-11 rounded-full bg-rose-600/95 text-white flex items-center justify-center shadow-lg">
+                                <i data-lucide="play" class="w-5 h-5 fill-current ml-0.5"></i>
+                            </div>
+                        </div>
+                    </div>
+                ` : '';
+
+                const tagsHtml = (item.tags && item.tags.length > 0) ? `
+                    <div class="flex flex-wrap gap-1.5 mt-3">
+                        ${item.tags.slice(0, 3).map(tag => `
+                            <span onclick="event.stopPropagation(); toggleTagFilter('${escapeHtml(tag)}')" class="cursor-pointer px-2.5 py-0.5 rounded-lg text-[11px] font-semibold bg-slate-100 hover:bg-indigo-100 dark:bg-slate-800 dark:hover:bg-indigo-900/50 text-slate-600 dark:text-slate-300 transition-colors">
+                                #${escapeHtml(tag)}
+                            </span>
+                        `).join('')}
+                        ${item.tags.length > 3 ? `<span class="text-[11px] text-slate-400 self-center">+${item.tags.length - 3}</span>` : ''}
+                    </div>
+                ` : '';
+
+                return `
+                    <article class="bento-card group bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-xl hover:shadow-indigo-500/10 overflow-hidden flex flex-col justify-between relative">
+                        <div class="h-1.5 w-full bg-gradient-to-r ${cfg.topBar}"></div>
+                        
+                        <div class="p-4 sm:p-5 flex-1 flex flex-col">
+                            <div class="flex items-center justify-between gap-2 mb-3">
+                                <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-bold ${cfg.badgeBg}">
+                                    <span class="w-4 h-4 inline-block">${cfg.icon}</span>
+                                    <span>${cfg.label}${subLabel}</span>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <button onclick="toggleFavorite('${item.id}')" class="p-2 sm:p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-transform active:scale-125" title="즐겨찾기">
+                                        <span class="w-5 h-5 block">${item.favorite ? icons3D.starActive : icons3D.starInactive}</span>
+                                    </button>
+                                    <button onclick="openModal('${item.id}')" class="p-2 sm:p-1.5 rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors opacity-100 sm:opacity-0 sm:group-hover:opacity-100" title="수정">
+                                        <i data-lucide="edit-2" class="w-4 h-4"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            ${thumbnailHtml}
+
+                            <div onclick="openDetailModal('${item.id}')" class="cursor-pointer flex-1">
+                                <h3 class="font-bold text-base sm:text-lg text-slate-900 dark:text-white mb-2 line-clamp-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                                    ${escapeHtml(item.title)}
+                                </h3>
+                                <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 line-clamp-3 leading-relaxed">
+                                    ${escapeHtml(item.content || '상세 메모가 없습니다.')}
+                                </p>
+                            </div>
+
+                            ${tagsHtml}
+                        </div>
+
+                        <div class="px-4 sm:px-5 py-3 bg-slate-50/70 dark:bg-slate-800/40 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
+                            <span>${formatDate(item.createdAt)}</span>
+                            <div class="flex items-center gap-2">
+                                ${item.url ? `
+                                    <a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" 
+                                       class="inline-flex items-center gap-1 font-semibold text-indigo-600 dark:text-indigo-400 hover:underline">
+                                        <span>열기</span>
+                                        <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                                    </a>
+                                ` : `
+                                    <button onclick="openDetailModal('${item.id}')" class="font-semibold text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400">
+                                        자세히 보기
+                                    </button>
+                                `}
+                            </div>
+                        </div>
+                    </article>
+                `;
+            }).join('');
+
+            lucide.createIcons();
+        };
+
+        window.toggleFavorite = async function(id) {
+            const item = items.find(i => i.id === id);
+            if (!item) return;
+            const nextState = !item.favorite;
+            await updateItemInCloud(id, { favorite: nextState });
+            showToast(nextState ? '⭐ 즐겨찾기에 추가했습니다.' : '즐겨찾기를 해제했습니다.');
+        };
+
+        window.toggleDynamicFields = function(selectedSubType = '') {
+            const category = document.querySelector('input[name="category"]:checked').value;
+            const subTypeContainer = document.getElementById('subTypeContainer');
+            const subTypeSelect = document.getElementById('itemSubType');
+
+            if (category === 'idea') {
+                subTypeContainer.classList.add('hidden');
+                subTypeSelect.innerHTML = '<option value="메모">메모</option>';
+            } else if (category === 'creation') {
+                subTypeContainer.classList.remove('hidden');
+                subTypeSelect.innerHTML = `
+                    <option value="웹페이지">🌐 웹페이지 / 사이트</option>
+                    <option value="앱/프로그램">📱 앱 / 프로그램</option>
+                    <option value="문서/파일">📁 문서 / 디자인 파일</option>
+                    <option value="기타 작업물">✨ 기타 작업물</option>
+                `;
+            } else if (category === 'reference') {
+                subTypeContainer.classList.remove('hidden');
+                subTypeSelect.innerHTML = `
+                    <option value="유튜브">🎬 유튜브 / 영상</option>
+                    <option value="도서">📚 책 / 독서노트</option>
+                    <option value="아티클">📰 웹 아티클 / 블로그</option>
+                    <option value="기타 참고자료">🔖 기타 참고자료</option>
+                `;
+            }
+
+            if (selectedSubType) {
+                subTypeSelect.value = selectedSubType;
+            }
+        };
+
+        window.openModal = function(id = null) {
+            const modal = document.getElementById('itemModal');
+            const form = document.getElementById('itemForm');
+            form.reset();
+
+            if (id) {
+                const item = items.find(i => i.id === id);
+                if (!item) return;
+                document.getElementById('modalTitle').textContent = '기록 수정하기';
+                document.getElementById('itemId').value = item.id;
+                document.querySelector(`input[name="category"][value="${item.category}"]`).checked = true;
+                toggleDynamicFields(item.subType);
+                document.getElementById('itemTitle').value = item.title;
+                document.getElementById('itemUrl').value = item.url || '';
+                document.getElementById('itemContent').value = item.content || '';
+                document.getElementById('itemTags').value = (item.tags || []).join(', ');
+            } else {
+                document.getElementById('modalTitle').textContent = '새로운 기록 추가';
+                document.getElementById('itemId').value = '';
+                const defaultCat = currentFilter === 'all' ? 'idea' : currentFilter;
+                document.querySelector(`input[name="category"][value="${defaultCat}"]`).checked = true;
+                toggleDynamicFields();
+            }
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        };
+
+        window.closeModal = function() {
+            const modal = document.getElementById('itemModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        };
+
+        window.openDetailModal = function(id) {
+            const item = items.find(i => i.id === id);
+            if (!item) return;
+
+            const badgeEl = document.getElementById('detailBadge');
+            const styles = {
+                idea: 'bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300',
+                creation: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300',
+                reference: 'bg-rose-100 text-rose-800 dark:bg-rose-950/70 dark:text-rose-300'
+            };
+            const names = { idea: '💡 아이디어 노트', creation: '🚀 내 작업물', reference: '📕 레퍼런스' };
+
+            badgeEl.className = `inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold ${styles[item.category]}`;
+            badgeEl.textContent = `${names[item.category]}${item.subType ? ' · ' + item.subType : ''}`;
+
+            document.getElementById('detailTitle').textContent = item.title;
+            document.getElementById('detailDate').textContent = `기록일: ${formatDate(item.createdAt)}`;
+            document.getElementById('detailContent').textContent = item.content || '작성된 상세 메모가 없습니다.';
+
+            // 아이디어 노트일 경우 AI 기획안 확장 & 작업물 승격 바 노출
+            const ideaActionsBar = document.getElementById('ideaActionsBar');
+            if (item.category === 'idea') {
+                ideaActionsBar.classList.remove('hidden');
+                ideaActionsBar.classList.add('flex');
+                document.getElementById('aiExpandBtn').onclick = () => expandIdeaWithAI(item.id);
+                document.getElementById('promoteToCreationBtn').onclick = () => openPromoteModal(item.id);
+            } else {
+                ideaActionsBar.classList.add('hidden');
+                ideaActionsBar.classList.remove('flex');
+            }
+
+            // 유튜브 영상 임베드 처리
+            const ytContainer = document.getElementById('youtubeEmbedContainer');
+            const ytId = getYoutubeId(item.url);
+            if (ytId) {
+                ytContainer.innerHTML = `<iframe class="w-full h-full" src="https://www.youtube.com/embed/${ytId}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+                ytContainer.classList.remove('hidden');
+            } else {
+                ytContainer.innerHTML = '';
+                ytContainer.classList.add('hidden');
+            }
+
+            // 외부 링크 처리
+            const linkContainer = document.getElementById('detailLinkContainer');
+            if (item.url) {
+                document.getElementById('detailLink').href = item.url;
+                document.getElementById('detailLinkText').textContent = item.url;
+                linkContainer.classList.remove('hidden');
+            } else {
+                linkContainer.classList.add('hidden');
+            }
+
+            // 태그 표시
+            const tagsContainer = document.getElementById('detailTags');
+            tagsContainer.innerHTML = (item.tags || []).map(tag => `
+                <span class="px-3 py-1 rounded-xl text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-300">
+                    #${escapeHtml(tag)}
+                </span>
+            `).join('');
+
+            document.getElementById('detailEditBtn').onclick = () => {
+                closeDetailModal();
+                openModal(item.id);
+            };
+            document.getElementById('detailDeleteBtn').onclick = async () => {
+                await deleteItemFromCloud(item.id);
+                closeDetailModal();
+                showToast('🗑️ 기록이 삭제되었습니다.');
+            };
+
+            const modal = document.getElementById('detailModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            lucide.createIcons();
+        };
+
+        window.closeDetailModal = function() {
+            const modal = document.getElementById('detailModal');
+            const ytContainer = document.getElementById('youtubeEmbedContainer');
+            ytContainer.innerHTML = '';
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        };
+
+        // 빠른 아이디어 저장 폼
+        document.getElementById('quickIdeaForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const input = document.getElementById('quickIdeaInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const newItem = {
+                id: 'item-' + Date.now(),
+                category: 'idea',
+                subType: '메모',
+                title: text,
+                url: '',
+                content: '',
+                tags: ['빠른메모'],
+                favorite: false,
+                createdAt: Date.now()
+            };
+
+            input.value = '';
+            await saveItemToCloud(newItem);
+            showToast('⚡ 아이디어가 클라우드에 즉시 저장되었습니다!');
+        });
+
+        // 상세 모달 저장 폼
+        document.getElementById('itemForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('itemId').value;
+            const category = document.querySelector('input[name="category"]:checked').value;
+            const subType = document.getElementById('itemSubType').value;
+            const title = document.getElementById('itemTitle').value.trim();
+            const url = document.getElementById('itemUrl').value.trim();
+            const content = document.getElementById('itemContent').value.trim();
+            const tagsRaw = document.getElementById('itemTags').value;
+            const tags = tagsRaw.split(',').map(t => t.trim().replace(/^#/, '')).filter(Boolean);
+
+            if (!title) return;
+
+            if (id) {
+                await updateItemInCloud(id, { category, subType, title, url, content, tags });
+                showToast('✨ 수정 내용이 동기화되었습니다.');
+            } else {
+                const newItem = {
+                    id: 'item-' + Date.now(),
+                    category,
+                    subType,
+                    title,
+                    url,
+                    content,
+                    tags,
+                    favorite: false,
+                    createdAt: Date.now()
+                };
+                await saveItemToCloud(newItem);
+                showToast('🎉 새로운 기록이 저장되었습니다!');
+            }
+
+            closeModal();
+        });
+
+        // PC/모바일 검색창 동기화
+        const desktopSearch = document.getElementById('searchInputDesktop');
+        const mobileSearch = document.getElementById('searchInputMobile');
+
+        desktopSearch.addEventListener('input', (e) => {
+            searchQuery = e.target.value;
+            mobileSearch.value = searchQuery;
+            renderItems();
+        });
+
+        mobileSearch.addEventListener('input', (e) => {
+            searchQuery = e.target.value;
+            desktopSearch.value = searchQuery;
+            renderItems();
+        });
+
+        // 다크모드 테마 토글
+        const themeToggle = document.getElementById('themeToggle');
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+
+        themeToggle.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+        });
+
+        // 모달 바깥 영역 클릭 시 닫기
+        document.getElementById('itemModal').addEventListener('click', (e) => {
+            if (e.target.id === 'itemModal') closeModal();
+        });
+        document.getElementById('detailModal').addEventListener('click', (e) => {
+            if (e.target.id === 'detailModal') closeDetailModal();
+        });
+        document.getElementById('promoteModal').addEventListener('click', (e) => {
+            if (e.target.id === 'promoteModal') closePromoteModal();
+        });
+        document.getElementById('backupModal').addEventListener('click', (e) => {
+            if (e.target.id === 'backupModal') closeBackupModal();
+        });
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMessage').textContent = message;
+            toast.classList.remove('translate-y-24', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-24', 'opacity-0');
+            }, 3000);
+        }
+
+        // 앱 초기화
+        window.addEventListener('DOMContentLoaded', () => {
+            inject3DIcons();
+            lucide.createIcons();
+            initCloudSync();
+        });
+    </script>
+</body>
+</html>

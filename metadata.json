@@ -1,0 +1,6 @@
+{
+  "name": "IdeaVault - 나만의 아이디어 & 레퍼런스 저장소",
+  "description": "나만의 아이디어 노트, 작업물, 레퍼런스를 기록하고 관리하는 저장소",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
