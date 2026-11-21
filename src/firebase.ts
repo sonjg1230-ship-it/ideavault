@@ -1,18 +1,18 @@
 import { initializeApp } from 'firebase/app';
 import {
   getAuth,
+  GoogleAuthProvider,
   onAuthStateChanged,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  sendEmailVerification,
-  sendPasswordResetEmail,
+  signInWithPopup,
   signOut,
   type User,
 } from 'firebase/auth';
 import {
   getFirestore,
   doc,
+  getDoc,
   getDocFromServer,
+  getDocs,
   collection,
   query,
   where,
@@ -20,6 +20,7 @@ import {
   setDoc,
   updateDoc,
   deleteDoc,
+  writeBatch,
   serverTimestamp,
   Timestamp,
   type Unsubscribe,
@@ -30,9 +31,15 @@ const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 export const auth = getAuth(app);
 
+export const SHARED_VAULT_ID = 'main';
+export const PRIMARY_OWNER_EMAIL = 'sonjg1230@gmail.com';
+
 export const VALIDATION_LIMITS = {
   ID_MAX: 128,
   ID_PATTERN: /^[a-zA-Z0-9_-]+$/,
+  EMAIL_MAX: 128,
+  EMAIL_PATTERN: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+  ALLOWED_EMAILS_MAX: 3,
   SUBTYPE_MAX: 64,
   TITLE_MIN: 1,
   TITLE_MAX: 200,
@@ -45,9 +52,20 @@ export const VALIDATION_LIMITS = {
 
 export type VaultCategory = 'idea' | 'creation' | 'reference';
 
-export interface VaultItem {
+export interface SharedVault {
   id: string;
   ownerId: string;
+  ownerEmail: string;
+  allowedEmails: string[];
+  createdAt: Timestamp | number;
+  updatedAt?: Timestamp | number;
+}
+
+export interface VaultItem {
+  id: string;
+  vaultId: string;
+  ownerId: string;
+  allowedEmails: string[];
   category: VaultCategory;
   subType: string;
   title: string;
@@ -124,7 +142,9 @@ export async function testConnection(): Promise<void> {
 void testConnection();
 
 export function sanitizeId(rawId?: string): string {
-  const cleaned = (rawId || `item-${Date.now()}`).replace(/[^a-zA-Z0-9_-]/g, '-').slice(0, VALIDATION_LIMITS.ID_MAX);
+  const cleaned = (rawId || `item-${Date.now()}`)
+    .replace(/[^a-zA-Z0-9_-]/g, '-')
+    .slice(0, VALIDATION_LIMITS.ID_MAX);
   if (!cleaned || !VALIDATION_LIMITS.ID_PATTERN.test(cleaned)) {
     return `item-${Date.now()}`;
   }
@@ -161,13 +181,182 @@ export function sanitizeTags(rawTags: unknown): string[] {
   return result;
 }
 
+export function normalizeAllowedEmails(extraEmails: string[] = []): string[] {
+  const list: string[] = [PRIMARY_OWNER_EMAIL];
+  for (const raw of extraEmails) {
+    if (typeof raw !== 'string') continue;
+    const email = raw.trim().toLowerCase().slice(0, VALIDATION_LIMITS.EMAIL_MAX);
+    if (
+      email &&
+      VALIDATION_LIMITS.EMAIL_PATTERN.test(email) &&
+      !list.includes(email)
+    ) {
+      list.push(email);
+    }
+    if (list.length >= VALIDATION_LIMITS.ALLOWED_EMAILS_MAX) break;
+  }
+  return list;
+}
+
+export function isPrimaryAdminUser(user: User | null): boolean {
+  return Boolean(
+    user &&
+      user.emailVerified &&
+      user.email &&
+      user.email.toLowerCase() === PRIMARY_OWNER_EMAIL
+  );
+}
+
+export async function signInWithGoogle(): Promise<User> {
+  const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account' });
+  const cred = await signInWithPopup(auth, provider);
+  return cred.user;
+}
+
+export async function loadOrInitSharedVault(user: User): Promise<SharedVault> {
+  const vaultPath = `vaults/${SHARED_VAULT_ID}`;
+  const vaultRef = doc(db, 'vaults', SHARED_VAULT_ID);
+  const userEmail = (user.email || '').toLowerCase();
+
+  let snap;
+  try {
+    snap = await getDoc(vaultRef);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.GET, vaultPath);
+  }
+
+  if (snap.exists()) {
+    const data = snap.data() as SharedVault;
+    const allowed = Array.isArray(data.allowedEmails)
+      ? data.allowedEmails.map((e) => e.toLowerCase())
+      : [];
+    if (!allowed.includes(userEmail) && userEmail !== PRIMARY_OWNER_EMAIL) {
+      throw new Error('VAULT_ACCESS_DENIED');
+    }
+    return {
+      ...data,
+      allowedEmails: allowed,
+    };
+  }
+
+  if (userEmail !== PRIMARY_OWNER_EMAIL) {
+    throw new Error('VAULT_NOT_INITIALIZED');
+  }
+
+  const initialVault = {
+    id: SHARED_VAULT_ID,
+    ownerId: user.uid,
+    ownerEmail: PRIMARY_OWNER_EMAIL,
+    allowedEmails: [PRIMARY_OWNER_EMAIL],
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  };
+
+  try {
+    await setDoc(vaultRef, initialVault);
+  } catch (error) {
+    handleFirestoreError(error, OperationType.CREATE, vaultPath);
+  }
+
+  return {
+    id: SHARED_VAULT_ID,
+    ownerId: user.uid,
+    ownerEmail: PRIMARY_OWNER_EMAIL,
+    allowedEmails: [PRIMARY_OWNER_EMAIL],
+    createdAt: Date.now(),
+  };
+}
+
+export function subscribeSharedVault(
+  onUpdate: (vault: SharedVault | null) => void,
+  onError: (err: Error) => void
+): Unsubscribe {
+  const vaultPath = `vaults/${SHARED_VAULT_ID}`;
+  const vaultRef = doc(db, 'vaults', SHARED_VAULT_ID);
+
+  return onSnapshot(
+    vaultRef,
+    (snap) => {
+      if (!snap.exists()) {
+        onUpdate(null);
+        return;
+      }
+      onUpdate(snap.data() as SharedVault);
+    },
+    (error) => {
+      try {
+        handleFirestoreError(error, OperationType.GET, vaultPath);
+      } catch (wrapped) {
+        onError(wrapped instanceof Error ? wrapped : new Error(String(wrapped)));
+      }
+    }
+  );
+}
+
+export async function updateVaultAllowedEmails(
+  user: User,
+  extraEmails: string[]
+): Promise<string[]> {
+  if (!isPrimaryAdminUser(user)) {
+    throw new Error('공유 계정 목록은 관리자 계정만 변경할 수 있습니다.');
+  }
+
+  const nextAllowedEmails = normalizeAllowedEmails(extraEmails);
+  const vaultPath = `vaults/${SHARED_VAULT_ID}`;
+  const vaultRef = doc(db, 'vaults', SHARED_VAULT_ID);
+
+  try {
+    await updateDoc(vaultRef, {
+      allowedEmails: nextAllowedEmails,
+      updatedAt: serverTimestamp(),
+    });
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, vaultPath);
+  }
+
+  // 기존 항목들의 allowedEmails도 새 공유 목록과 동기화
+  const itemsColPath = `vaults/${SHARED_VAULT_ID}/items`;
+  try {
+    const q = query(
+      collection(db, 'vaults', SHARED_VAULT_ID, 'items'),
+      where('allowedEmails', 'array-contains', PRIMARY_OWNER_EMAIL)
+    );
+    const snapshot = await getDocs(q);
+    const docsToUpdate = snapshot.docs.filter((docSnap) => {
+      const currentList = docSnap.data()?.allowedEmails;
+      return JSON.stringify(currentList) !== JSON.stringify(nextAllowedEmails);
+    });
+
+    for (let i = 0; i < docsToUpdate.length; i += 400) {
+      const chunk = docsToUpdate.slice(i, i + 400);
+      const batch = writeBatch(db);
+      for (const docSnap of chunk) {
+        batch.update(docSnap.ref, {
+          allowedEmails: nextAllowedEmails,
+          updatedAt: serverTimestamp(),
+        });
+      }
+      await batch.commit();
+    }
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, itemsColPath);
+  }
+
+  return nextAllowedEmails;
+}
+
 export function subscribeVaultItems(
-  userId: string,
+  userEmail: string,
   onData: (items: VaultItem[]) => void,
   onError: (err: Error) => void
 ): Unsubscribe {
-  const itemsPath = `users/${userId}/items`;
-  const q = query(collection(db, 'users', userId, 'items'), where('ownerId', '==', userId));
+  const itemsPath = `vaults/${SHARED_VAULT_ID}/items`;
+  const normalizedEmail = userEmail.trim().toLowerCase();
+  const q = query(
+    collection(db, 'vaults', SHARED_VAULT_ID, 'items'),
+    where('allowedEmails', 'array-contains', normalizedEmail)
+  );
 
   return onSnapshot(
     q,
@@ -194,6 +383,7 @@ export function subscribeVaultItems(
 
 export async function createVaultItem(
   userId: string,
+  allowedEmails: string[],
   draft: {
     id?: string;
     category: string;
@@ -206,15 +396,19 @@ export async function createVaultItem(
   }
 ): Promise<string> {
   const itemId = sanitizeId(draft.id);
-  const path = `users/${userId}/items/${itemId}`;
+  const path = `vaults/${SHARED_VAULT_ID}/items/${itemId}`;
   const title = (draft.title || '').trim().slice(0, VALIDATION_LIMITS.TITLE_MAX);
   if (!title) {
     throw new Error('제목을 입력해 주세요.');
   }
 
+  const normalizedAllowed = normalizeAllowedEmails(allowedEmails);
+
   const payload = {
     id: itemId,
+    vaultId: SHARED_VAULT_ID,
     ownerId: userId,
+    allowedEmails: normalizedAllowed,
     category: sanitizeCategory(draft.category),
     subType: (draft.subType || '메모').trim().slice(0, VALIDATION_LIMITS.SUBTYPE_MAX),
     title,
@@ -227,7 +421,7 @@ export async function createVaultItem(
   };
 
   try {
-    await setDoc(doc(db, 'users', userId, 'items', itemId), payload);
+    await setDoc(doc(db, 'vaults', SHARED_VAULT_ID, 'items', itemId), payload);
     return itemId;
   } catch (error) {
     handleFirestoreError(error, OperationType.CREATE, path);
@@ -235,7 +429,6 @@ export async function createVaultItem(
 }
 
 export async function updateVaultItem(
-  userId: string,
   itemId: string,
   partial: Partial<{
     category: string;
@@ -247,7 +440,7 @@ export async function updateVaultItem(
     favorite: boolean;
   }>
 ): Promise<void> {
-  const path = `users/${userId}/items/${itemId}`;
+  const path = `vaults/${SHARED_VAULT_ID}/items/${itemId}`;
   const updatePayload: Record<string, unknown> = {
     updatedAt: serverTimestamp(),
   };
@@ -277,16 +470,16 @@ export async function updateVaultItem(
   }
 
   try {
-    await updateDoc(doc(db, 'users', userId, 'items', itemId), updatePayload);
+    await updateDoc(doc(db, 'vaults', SHARED_VAULT_ID, 'items', itemId), updatePayload);
   } catch (error) {
     handleFirestoreError(error, OperationType.UPDATE, path);
   }
 }
 
-export async function deleteVaultItem(userId: string, itemId: string): Promise<void> {
-  const path = `users/${userId}/items/${itemId}`;
+export async function deleteVaultItem(itemId: string): Promise<void> {
+  const path = `vaults/${SHARED_VAULT_ID}/items/${itemId}`;
   try {
-    await deleteDoc(doc(db, 'users', userId, 'items', itemId));
+    await deleteDoc(doc(db, 'vaults', SHARED_VAULT_ID, 'items', itemId));
   } catch (error) {
     handleFirestoreError(error, OperationType.DELETE, path);
   }
@@ -295,34 +488,26 @@ export async function deleteVaultItem(userId: string, itemId: string): Promise<v
 export function getAuthErrorMessage(error: unknown): string {
   const code = (error as { code?: string })?.code || '';
   switch (code) {
-    case 'auth/invalid-email':
-      return '올바른 이메일 형식을 입력해 주세요.';
-    case 'auth/user-disabled':
-      return '비활성화된 계정입니다.';
-    case 'auth/user-not-found':
-    case 'auth/wrong-password':
-    case 'auth/invalid-credential':
-      return '이메일 또는 비밀번호가 올바르지 않습니다.';
-    case 'auth/email-already-in-use':
-      return '이미 가입된 이메일입니다. 로그인 탭에서 로그인해 주세요.';
-    case 'auth/weak-password':
-      return '비밀번호는 6자 이상으로 입력해 주세요.';
+    case 'auth/popup-closed-by-user':
+      return '로그인 창이 닫혔습니다. 다시 시도해 주세요.';
+    case 'auth/popup-blocked':
+      return '브라우저에서 팝업이 차단되었습니다. 팝업 허용 후 다시 시도해 주세요.';
+    case 'auth/cancelled-popup-request':
+      return '이미 로그인 창이 열려 있습니다.';
+    case 'auth/unauthorized-domain':
+      return '현재 도메인이 Firebase 승인된 도메인에 등록되어 있지 않습니다.';
+    case 'auth/network-request-failed':
+      return '네트워크 연결을 확인한 뒤 다시 시도해 주세요.';
     case 'auth/too-many-requests':
       return '요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.';
-    case 'auth/operation-not-allowed':
-      return 'Firebase 콘솔에서 이메일/비밀번호 로그인을 먼저 활성화해야 합니다.';
     default:
-      return error instanceof Error ? error.message : '인증 중 오류가 발생했습니다.';
+      return error instanceof Error ? error.message : 'Google 로그인 중 오류가 발생했습니다.';
   }
 }
 
 export {
   firebaseConfig,
   onAuthStateChanged,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  sendEmailVerification,
-  sendPasswordResetEmail,
   signOut,
   type User,
 };

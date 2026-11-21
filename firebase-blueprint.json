@@ -1,8 +1,57 @@
 {
   "entities": {
+    "SharedVault": {
+      "title": "SharedVault",
+      "description": "Shared IdeaVault configuration defining the primary admin and up to 2 additional Google account emails allowed to access the vault.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Vault document identifier matching {vaultId}.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "ownerId": {
+          "type": "string",
+          "description": "Firebase Auth UID of the primary vault owner.",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "ownerEmail": {
+          "type": "string",
+          "description": "Verified lowercase email of the primary vault owner.",
+          "minLength": 3,
+          "maxLength": 128,
+          "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
+        },
+        "allowedEmails": {
+          "type": "array",
+          "description": "Bounded list (1 to 3) of lowercase Google account emails authorized to access this shared vault."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server-generated creation timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server-generated last update timestamp."
+        }
+      },
+      "required": [
+        "id",
+        "ownerId",
+        "ownerEmail",
+        "allowedEmails",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
     "VaultItem": {
       "title": "VaultItem",
-      "description": "A user-owned idea, creation, or reference item stored in IdeaVault.",
+      "description": "An idea, creation, or reference item stored in the shared IdeaVault.",
       "type": "object",
       "properties": {
         "id": {
@@ -12,11 +61,22 @@
           "maxLength": 128,
           "pattern": "^[a-zA-Z0-9_\\-]+$"
         },
+        "vaultId": {
+          "type": "string",
+          "description": "Parent shared vault ID.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
         "ownerId": {
           "type": "string",
-          "description": "Firebase Auth UID of the owner.",
+          "description": "Firebase Auth UID of the member who created the item.",
           "minLength": 1,
           "maxLength": 128
+        },
+        "allowedEmails": {
+          "type": "array",
+          "description": "Bounded list (1 to 3) of lowercase Google account emails mirrored from the parent vault for query-enforced list access."
         },
         "category": {
           "type": "string",
@@ -65,7 +125,9 @@
       },
       "required": [
         "id",
+        "vaultId",
         "ownerId",
+        "allowedEmails",
         "category",
         "subType",
         "title",
@@ -79,9 +141,13 @@
     }
   },
   "firestore": {
-    "/users/{userId}/items/{itemId}": {
+    "/vaults/{vaultId}": {
+      "schema": { "$ref": "#/entities/SharedVault" },
+      "description": "Master shared vault document holding the allowlist of Google accounts (primary owner + mobile/PC shared Google accounts)."
+    },
+    "/vaults/{vaultId}/items/{itemId}": {
       "schema": { "$ref": "#/entities/VaultItem" },
-      "description": "Private IdeaVault items scoped strictly to the authenticated and email-verified user."
+      "description": "Shared IdeaVault items accessible only to verified Google accounts registered in the parent vault allowlist."
     }
   }
 }

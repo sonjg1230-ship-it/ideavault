@@ -11,6 +11,13 @@ service cloud.firestore {
       return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
     }
 
+    function isValidEmailStr(email) {
+      return email is string
+        && email.size() >= 3
+        && email.size() <= 128
+        && email.matches('^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$');
+    }
+
     function incoming() {
       return request.resource.data;
     }
@@ -23,27 +30,64 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    function isVerifiedOwner(userId) {
+    function isVerifiedUser() {
       return isSignedIn()
         && request.auth.token.email_verified == true
-        && request.auth.uid == userId;
+        && request.auth.token.email is string
+        && request.auth.token.email.size() >= 3;
     }
 
-    function isValidVaultItem(data, itemId, userId) {
+    function isPrimaryAdmin() {
+      return isVerifiedUser()
+        && request.auth.token.email.lower() == 'sonjg1230@gmail.com';
+    }
+
+    function isValidAllowedEmails(emails) {
+      return emails is list
+        && emails.size() >= 1
+        && emails.size() <= 3
+        && isValidEmailStr(emails[0])
+        && emails[0] == 'sonjg1230@gmail.com'
+        && (emails.size() < 2 || isValidEmailStr(emails[1]))
+        && (emails.size() < 3 || isValidEmailStr(emails[2]));
+    }
+
+    function isValidVault(data, vaultId) {
       return data.keys().hasAll([
-          'id', 'ownerId', 'category', 'subType', 'title',
-          'url', 'content', 'tags', 'favorite', 'createdAt', 'updatedAt'
+          'id', 'ownerId', 'ownerEmail', 'allowedEmails', 'createdAt', 'updatedAt'
         ])
         && data.keys().hasOnly([
-          'id', 'ownerId', 'category', 'subType', 'title',
-          'url', 'content', 'tags', 'favorite', 'createdAt', 'updatedAt'
+          'id', 'ownerId', 'ownerEmail', 'allowedEmails', 'createdAt', 'updatedAt'
         ])
         && isValidId(data.id)
-        && data.id == itemId
+        && data.id == vaultId
         && data.ownerId is string
         && data.ownerId.size() >= 1
         && data.ownerId.size() <= 128
-        && data.ownerId == userId
+        && isValidEmailStr(data.ownerEmail)
+        && data.ownerEmail == 'sonjg1230@gmail.com'
+        && isValidAllowedEmails(data.allowedEmails)
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidVaultItem(data, itemId, vaultId) {
+      return data.keys().hasAll([
+          'id', 'vaultId', 'ownerId', 'allowedEmails', 'category', 'subType',
+          'title', 'url', 'content', 'tags', 'favorite', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'id', 'vaultId', 'ownerId', 'allowedEmails', 'category', 'subType',
+          'title', 'url', 'content', 'tags', 'favorite', 'createdAt', 'updatedAt'
+        ])
+        && isValidId(data.id)
+        && data.id == itemId
+        && isValidId(data.vaultId)
+        && data.vaultId == vaultId
+        && data.ownerId is string
+        && data.ownerId.size() >= 1
+        && data.ownerId.size() <= 128
+        && isValidAllowedEmails(data.allowedEmails)
         && data.category is string
         && data.category in ['idea', 'creation', 'reference']
         && data.subType is string
@@ -64,32 +108,98 @@ service cloud.firestore {
         && data.updatedAt is timestamp;
     }
 
-    match /users/{userId}/items/{itemId} {
-      allow get: if isVerifiedOwner(userId) && isValidId(itemId);
-      allow list: if isVerifiedOwner(userId) && resource.data.ownerId == request.auth.uid;
+    function isVaultMember(vaultId) {
+      return isVerifiedUser() && (
+        isPrimaryAdmin()
+        || (
+          exists(/databases/$(database)/documents/vaults/$(vaultId))
+          && get(/databases/$(database)/documents/vaults/$(vaultId)).data.allowedEmails is list
+          && request.auth.token.email.lower() in get(/databases/$(database)/documents/vaults/$(vaultId)).data.allowedEmails
+        )
+      );
+    }
 
-      allow create: if isVerifiedOwner(userId)
-        && isValidId(itemId)
-        && isValidVaultItem(incoming(), itemId, userId)
+    match /vaults/{vaultId} {
+      allow get: if isVerifiedUser() && isValidId(vaultId) && (
+        isPrimaryAdmin()
+        || (
+          resource != null
+          && existing().allowedEmails is list
+          && request.auth.token.email.lower() in existing().allowedEmails
+        )
+      );
+
+      allow create: if isPrimaryAdmin()
+        && isValidId(vaultId)
+        && isValidVault(incoming(), vaultId)
+        && incoming().ownerId == request.auth.uid
         && incoming().createdAt == request.time
         && incoming().updatedAt == request.time;
 
-      allow update: if isVerifiedOwner(userId)
-        && isValidId(itemId)
-        && isValidVaultItem(incoming(), itemId, userId)
+      allow update: if isPrimaryAdmin()
+        && isValidId(vaultId)
+        && isValidVault(incoming(), vaultId)
         && incoming().id == existing().id
         && incoming().ownerId == existing().ownerId
+        && incoming().ownerEmail == existing().ownerEmail
         && incoming().createdAt == existing().createdAt
         && incoming().updatedAt == request.time
-        && (
-          // Action 1: Toggle favorite
-          incoming().diff(existing()).affectedKeys().hasOnly(['favorite', 'updatedAt'])
-          ||
-          // Action 2: Edit item details / promote to creation / AI expand
-          incoming().diff(existing()).affectedKeys().hasOnly(['category', 'subType', 'title', 'url', 'content', 'tags', 'updatedAt'])
-        );
+        && incoming().diff(existing()).affectedKeys().hasOnly(['allowedEmails', 'updatedAt']);
 
-      allow delete: if isVerifiedOwner(userId) && isValidId(itemId);
+      allow delete: if false;
+
+      match /items/{itemId} {
+        allow get: if isVerifiedUser() && isValidId(vaultId) && isValidId(itemId) && isVaultMember(vaultId);
+
+        allow list: if isVerifiedUser()
+          && resource.data.allowedEmails is list
+          && request.auth.token.email.lower() in resource.data.allowedEmails;
+
+        allow create: if isVerifiedUser()
+          && isValidId(vaultId)
+          && isValidId(itemId)
+          && isValidVaultItem(incoming(), itemId, vaultId)
+          && incoming().ownerId == request.auth.uid
+          && incoming().createdAt == request.time
+          && incoming().updatedAt == request.time
+          && isVaultMember(vaultId)
+          && exists(/databases/$(database)/documents/vaults/$(vaultId))
+          && incoming().allowedEmails == get(/databases/$(database)/documents/vaults/$(vaultId)).data.allowedEmails;
+
+        allow update: if isVerifiedUser()
+          && isValidId(vaultId)
+          && isValidId(itemId)
+          && isValidVaultItem(incoming(), itemId, vaultId)
+          && incoming().id == existing().id
+          && incoming().vaultId == existing().vaultId
+          && incoming().ownerId == existing().ownerId
+          && incoming().createdAt == existing().createdAt
+          && incoming().updatedAt == request.time
+          && isVaultMember(vaultId)
+          && (
+            // Action 1: Toggle favorite
+            (
+              incoming().allowedEmails == existing().allowedEmails
+              && incoming().diff(existing()).affectedKeys().hasOnly(['favorite', 'updatedAt'])
+            )
+            ||
+            // Action 2: Edit item details / promote / AI expand
+            (
+              incoming().allowedEmails == existing().allowedEmails
+              && incoming().diff(existing()).affectedKeys().hasOnly(['category', 'subType', 'title', 'url', 'content', 'tags', 'updatedAt'])
+            )
+            ||
+            // Action 3: Sync shared allowlist from parent vault (primary admin only)
+            (
+              isPrimaryAdmin()
+              && exists(/databases/$(database)/documents/vaults/$(vaultId))
+              && incoming().allowedEmails == get(/databases/$(database)/documents/vaults/$(vaultId)).data.allowedEmails
+              && incoming().diff(existing()).affectedKeys().hasOnly(['allowedEmails', 'updatedAt'])
+            )
+          );
+
+        allow delete: if isVerifiedUser() && isValidId(vaultId) && isValidId(itemId) && isVaultMember(vaultId);
+      }
     }
   }
 }

@@ -126,17 +126,17 @@
         </div>
     </div>
 
-    <!-- 클라우드 이메일/비밀번호 로그인 & 인증 화면 (PIN 잠금 해제 후 미로그인 시 표시) -->
+    <!-- 클라우드 Google 계정 로그인 & 접근 허용 안내 화면 (PIN 잠금 해제 후 미로그인/미허용 시 표시) -->
     <div id="cloudAuthScreen" class="fixed inset-0 z-[90] hidden items-center justify-center p-4 bg-[#F6F7FB]/95 dark:bg-[#0B0F19]/95 backdrop-blur-2xl overflow-y-auto">
         <div class="bg-white/95 dark:bg-slate-900/95 rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-200/80 dark:border-slate-800">
-            <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center justify-between mb-5">
                 <div class="flex items-center gap-2.5">
                     <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-md shadow-indigo-500/25">
-                        <i data-lucide="cloud" class="w-5 h-5 text-white"></i>
+                        <i data-lucide="users" class="w-5 h-5 text-white"></i>
                     </div>
                     <div>
-                        <h2 class="text-lg font-extrabold text-slate-900 dark:text-white leading-tight">클라우드 계정 연결</h2>
-                        <p class="text-[11px] text-slate-500 dark:text-slate-400">PC · 모바일 실시간 동기화</p>
+                        <h2 class="text-lg font-extrabold text-slate-900 dark:text-white leading-tight">공유 보관함 로그인</h2>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400">허용된 Google 계정 2개(PC · 모바일) 실시간 연동</p>
                     </div>
                 </div>
                 <button type="button" onclick="lockVault()" class="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="다시 잠그기">
@@ -144,71 +144,49 @@
                 </button>
             </div>
 
-            <!-- 로그인 / 회원가입 카드 -->
-            <div id="authFormCard">
-                <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-5 leading-relaxed">
-                    구글 계정이 달라도 상관없습니다. PC와 모바일에서 동일한 <strong>전용 이메일·비밀번호</strong>로 로그인하면 모든 기록이 실시간으로 연동됩니다.
-                </p>
-
-                <!-- 탭 전환 -->
-                <div class="grid grid-cols-2 gap-1.5 p-1 rounded-2xl bg-slate-100 dark:bg-slate-800 mb-5">
-                    <button type="button" id="authTabLogin" onclick="switchAuthMode('login')" class="py-2 rounded-xl text-xs sm:text-sm font-bold bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm transition-all">
-                        로그인
-                    </button>
-                    <button type="button" id="authTabSignup" onclick="switchAuthMode('signup')" class="py-2 rounded-xl text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-400 transition-all">
-                        새 계정 만들기
-                    </button>
+            <!-- Google 로그인 카드 -->
+            <div id="googleLoginCard">
+                <div class="p-4 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/50 mb-5 text-left space-y-1.5">
+                    <p class="text-xs font-bold text-indigo-700 dark:text-indigo-300 flex items-center gap-1.5">
+                        <i data-lucide="shield-check" class="w-4 h-4"></i>
+                        <span>PC · 모바일 다른 구글 계정도 함께 사용</span>
+                    </p>
+                    <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                        허용 목록에 등록된 Google 계정으로 로그인하면 PC와 모바일에서 동일한 보관함을 실시간으로 공유합니다. 그 외 계정은 접근이 차단됩니다.
+                    </p>
                 </div>
 
-                <form id="cloudAuthForm" class="space-y-3.5">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">이메일</label>
-                        <input type="email" id="authEmailInput" required placeholder="name@example.com"
-                            class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm outline-none focus:border-indigo-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">비밀번호 <span class="text-[11px] font-normal text-slate-400">(6자 이상)</span></label>
-                        <input type="password" id="authPasswordInput" required minlength="6" placeholder="비밀번호 입력"
-                            class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm outline-none focus:border-indigo-500">
-                    </div>
-                    <div id="authConfirmWrap" class="hidden">
-                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">비밀번호 확인</label>
-                        <input type="password" id="authPasswordConfirmInput" minlength="6" placeholder="비밀번호 다시 입력"
-                            class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm outline-none focus:border-indigo-500">
-                    </div>
+                <p id="authErrorMsg" class="hidden text-xs font-semibold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 px-3 py-2.5 rounded-xl mb-4"></p>
 
-                    <p id="authErrorMsg" class="hidden text-xs font-semibold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 px-3 py-2 rounded-xl"></p>
-
-                    <button type="submit" id="authSubmitBtn" class="w-full py-3 rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:opacity-95 text-white text-sm font-bold shadow-lg shadow-indigo-500/25 transition-all active:scale-95">
-                        로그인하고 동기화 시작
-                    </button>
-                </form>
-
-                <div class="mt-4 text-center">
-                    <button type="button" onclick="handlePasswordReset()" class="text-xs font-semibold text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-                        비밀번호를 잊으셨나요? 재설정 메일 받기
-                    </button>
-                </div>
+                <button type="button" id="googleSignInBtn" onclick="handleGoogleLogin()" class="w-full py-3.5 px-4 rounded-2xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/80 border-2 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 text-sm font-bold shadow-sm flex items-center justify-center gap-3 transition-all active:scale-95">
+                    <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17Z"/>
+                        <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.96H1.29v3.14C3.26 21.3 7.31 24 12 24Z"/>
+                        <path fill="#FBBC05" d="M5.28 14.24c-.24-.72-.38-1.49-.38-2.24s.14-1.52.38-2.24V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.99-3.14Z"/>
+                        <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.99 3.14c.95-2.85 3.6-4.96 6.72-4.96Z"/>
+                    </svg>
+                    <span>Google 계정으로 로그인</span>
+                </button>
             </div>
 
-            <!-- 이메일 인증 대기 카드 -->
-            <div id="verifyEmailCard" class="hidden text-center">
-                <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-amber-100 dark:bg-amber-950/50 text-amber-600 dark:text-amber-300 flex items-center justify-center">
-                    <i data-lucide="mail-check" class="w-7 h-7"></i>
+            <!-- 접근 권한 없음 카드 -->
+            <div id="accessDeniedCard" class="hidden text-center">
+                <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-rose-100 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+                    <i data-lucide="shield-alert" class="w-7 h-7"></i>
                 </div>
-                <h3 class="text-base font-extrabold text-slate-900 dark:text-white mb-1.5">이메일 인증이 필요합니다</h3>
-                <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-5 leading-relaxed">
-                    <span id="verifyEmailAddress" class="font-bold text-indigo-600 dark:text-indigo-400"></span> 주소로 인증 메일을 보냈습니다. 메일의 인증 링크를 누른 뒤 아래 버튼을 눌러주세요.
+                <h3 class="text-base font-extrabold text-slate-900 dark:text-white mb-1.5">접근이 허용되지 않은 계정입니다</h3>
+                <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-3 leading-relaxed">
+                    현재 로그인된 계정(<span id="deniedUserEmail" class="font-bold text-rose-600 dark:text-rose-400 break-all"></span>)은 공유 보관함 허용 목록에 등록되어 있지 않습니다.
                 </p>
+                <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/70 text-[11px] text-slate-500 dark:text-slate-400 mb-5 leading-relaxed text-left">
+                    모바일 계정을 새로 연결하려면 먼저 관리자 계정(<span id="deniedAdminHint" class="font-bold text-slate-700 dark:text-slate-200"></span>)으로 로그인한 뒤, 상단의 <strong>공유 계정</strong> 버튼에서 이 계정을 허용 목록에 등록해 주세요.
+                </div>
                 <div class="space-y-2.5">
-                    <button type="button" id="checkVerificationBtn" onclick="checkEmailVerification()" class="w-full py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold shadow-md transition-all active:scale-95">
-                        이메일 인증 완료 확인
+                    <button type="button" onclick="switchGoogleAccount()" class="w-full py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold shadow-md transition-all active:scale-95">
+                        다른 Google 계정으로 로그인
                     </button>
-                    <button type="button" onclick="resendVerificationEmail()" class="w-full py-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-semibold transition-all">
-                        인증 메일 다시 보내기
-                    </button>
-                    <button type="button" onclick="logoutCloudAccount()" class="w-full py-2 rounded-xl text-xs font-semibold text-slate-500 hover:text-rose-500 transition-colors">
-                        다른 이메일로 로그인하기
+                    <button type="button" onclick="logoutCloudAccount()" class="w-full py-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-semibold transition-all">
+                        로그아웃
                     </button>
                 </div>
             </div>
@@ -271,8 +249,13 @@
 
             <!-- 우측 액션 버튼들 -->
             <div class="flex items-center gap-1.5 sm:gap-2.5">
+                <!-- 공유 구글 계정 관리 버튼 -->
+                <button id="shareAccountsBtn" onclick="openSharedAccountsModal()" class="hidden p-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-700 transition-all active:scale-90" title="공유 Google 계정 설정">
+                    <i data-lucide="users" class="w-5 h-5 text-emerald-500 dark:text-emerald-400"></i>
+                </button>
+
                 <!-- 계정 로그아웃 버튼 -->
-                <button id="logoutBtn" onclick="logoutCloudAccount()" class="hidden p-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-700 transition-all active:scale-90" title="클라우드 계정 로그아웃">
+                <button id="logoutBtn" onclick="logoutCloudAccount()" class="hidden p-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-700 transition-all active:scale-90" title="Google 계정 로그아웃">
                     <i data-lucide="log-out" class="w-5 h-5 text-slate-500 dark:text-slate-300"></i>
                 </button>
 
@@ -637,7 +620,7 @@
                 </button>
             </div>
             <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-3 leading-relaxed">
-                모든 기록은 로그인한 클라우드 계정에 실시간 동기화됩니다. JSON 파일로 별도 백업하거나 복원할 수 있습니다.
+                모든 기록은 허용된 Google 계정(PC · 모바일) 간에 실시간 동기화됩니다. JSON 파일로 별도 백업하거나 복원할 수 있습니다.
             </p>
             <p id="backupAccountInfo" class="hidden text-xs font-semibold text-indigo-600 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/50 px-3 py-2 rounded-xl mb-4"></p>
             <div class="space-y-3">
@@ -658,6 +641,49 @@
         </div>
     </div>
 
+    <!-- 공유 Google 계정(PC + 모바일) 관리 모달 -->
+    <div id="sharedAccountsModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-lg font-extrabold flex items-center gap-2">
+                    <i data-lucide="users" class="w-5 h-5 text-emerald-500"></i>
+                    <span>공유 Google 계정 관리</span>
+                </h3>
+                <button onclick="closeSharedAccountsModal()" class="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-4 leading-relaxed">
+                여기에 등록된 Google 계정만 이 보관함을 열람·수정할 수 있습니다. 모바일에서 다른 구글 계정을 사용 중이라면 아래에 추가해 주세요.
+            </p>
+
+            <form id="sharedAccountsForm" class="space-y-3.5">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">기본 관리자 계정 (PC)</label>
+                    <input type="text" id="primaryAdminEmailDisplay" readonly
+                        class="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-sm text-slate-600 dark:text-slate-300 font-semibold outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">함께 공유할 Google 계정 (모바일 등)</label>
+                    <input type="email" id="sharedEmail1Input" placeholder="예: mobile.account@gmail.com"
+                        class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">추가 공유 Google 계정 <span class="text-[11px] font-normal text-slate-400">(선택)</span></label>
+                    <input type="email" id="sharedEmail2Input" placeholder="예: another.account@gmail.com"
+                        class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm outline-none focus:border-emerald-500">
+                </div>
+
+                <p id="sharedAccountsHint" class="hidden text-xs font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-3 py-2 rounded-xl"></p>
+
+                <div class="flex items-center justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeSharedAccountsModal()" class="px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">닫기</button>
+                    <button type="submit" id="saveSharedAccountsBtn" class="px-5 py-2.5 rounded-xl text-sm font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-md transition-all">저장하고 동기화</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- 토스트 알림 -->
     <div id="toast" class="fixed bottom-20 md:bottom-6 left-1/2 -translate-x-1/2 md:left-auto md:right-6 md:translate-x-0 z-50 transform translate-y-24 opacity-0 transition-all duration-300 bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-4 py-3 rounded-2xl shadow-xl flex items-center gap-2.5 text-sm font-semibold whitespace-nowrap">
         <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400 dark:text-emerald-600 shrink-0"></i>
@@ -667,12 +693,14 @@
     <script type="module">
         import {
             auth,
+            PRIMARY_OWNER_EMAIL,
             onAuthStateChanged,
-            signInWithEmailAndPassword,
-            createUserWithEmailAndPassword,
-            sendEmailVerification,
-            sendPasswordResetEmail,
+            signInWithGoogle,
             signOut,
+            isPrimaryAdminUser,
+            loadOrInitSharedVault,
+            subscribeSharedVault,
+            updateVaultAllowedEmails,
             subscribeVaultItems,
             createVaultItem,
             updateVaultItem,
@@ -681,8 +709,10 @@
         } from "/src/firebase.ts";
 
         let currentUser = null;
+        let activeVault = null;
+        let activeAllowedEmails = [PRIMARY_OWNER_EMAIL];
+        let unsubscribeVault = null;
         let unsubscribeSnapshot = null;
-        let authMode = 'login';
 
         // 3D 스타일 커스텀 SVG 아이콘 세트
         const icons3D = {
@@ -872,6 +902,7 @@
             closeDetailModal();
             closePromoteModal();
             closeBackupModal();
+            closeSharedAccountsModal();
             updatePinDots(false);
             document.getElementById('pinErrorMsg').classList.add('opacity-0');
             const authScreen = document.getElementById('cloudAuthScreen');
@@ -893,17 +924,20 @@
             }
         }
 
-        function setSyncBadgeState(user) {
+        function setSyncBadgeState(user, vault) {
             const badge = document.getElementById('syncStatusBadge');
             const logoutBtn = document.getElementById('logoutBtn');
+            const shareBtn = document.getElementById('shareAccountsBtn');
             const backupAccountInfo = document.getElementById('backupAccountInfo');
-            if (user && user.emailVerified) {
+            if (user && vault) {
+                const count = (vault.allowedEmails || []).length;
                 badge.className = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300';
-                badge.title = `${user.email} 계정에 실시간 동기화 중`;
-                badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span><span class="hidden sm:inline">동기화됨</span>`;
+                badge.title = `${user.email} 로그인됨 (공유 계정 ${count}개)`;
+                badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span><span class="hidden sm:inline">동기화 (${count}계정)</span>`;
                 if (logoutBtn) logoutBtn.classList.remove('hidden');
+                if (shareBtn) shareBtn.classList.remove('hidden');
                 if (backupAccountInfo) {
-                    backupAccountInfo.textContent = `연결된 동기화 계정: ${user.email}`;
+                    backupAccountInfo.textContent = `연결된 Google 계정: ${user.email} (허용 목록 ${(vault.allowedEmails || []).join(', ')})`;
                     backupAccountInfo.classList.remove('hidden');
                 }
             } else {
@@ -911,14 +945,15 @@
                 badge.title = '로그인 필요';
                 badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span><span class="hidden sm:inline">미연결</span>`;
                 if (logoutBtn) logoutBtn.classList.add('hidden');
+                if (shareBtn) shareBtn.classList.add('hidden');
                 if (backupAccountInfo) backupAccountInfo.classList.add('hidden');
             }
         }
 
-        function showCloudAuthScreen(mode = 'form', emailForVerify = '') {
+        function showCloudAuthScreen(mode = 'login', deniedEmail = '') {
             const screen = document.getElementById('cloudAuthScreen');
-            const formCard = document.getElementById('authFormCard');
-            const verifyCard = document.getElementById('verifyEmailCard');
+            const loginCard = document.getElementById('googleLoginCard');
+            const deniedCard = document.getElementById('accessDeniedCard');
             const shell = document.getElementById('vaultAppShell');
 
             shell.classList.add('hidden');
@@ -926,13 +961,14 @@
             screen.classList.remove('hidden');
             screen.classList.add('flex');
 
-            if (mode === 'verify') {
-                formCard.classList.add('hidden');
-                verifyCard.classList.remove('hidden');
-                document.getElementById('verifyEmailAddress').textContent = emailForVerify;
+            if (mode === 'denied') {
+                loginCard.classList.add('hidden');
+                deniedCard.classList.remove('hidden');
+                document.getElementById('deniedUserEmail').textContent = deniedEmail;
+                document.getElementById('deniedAdminHint').textContent = PRIMARY_OWNER_EMAIL;
             } else {
-                verifyCard.classList.add('hidden');
-                formCard.classList.remove('hidden');
+                deniedCard.classList.add('hidden');
+                loginCard.classList.remove('hidden');
             }
             lucide.createIcons();
         }
@@ -948,168 +984,194 @@
             }
         }
 
-        window.switchAuthMode = function(mode) {
-            authMode = mode;
-            const loginTab = document.getElementById('authTabLogin');
-            const signupTab = document.getElementById('authTabSignup');
-            const confirmWrap = document.getElementById('authConfirmWrap');
-            const confirmInput = document.getElementById('authPasswordConfirmInput');
-            const submitBtn = document.getElementById('authSubmitBtn');
-            const errEl = document.getElementById('authErrorMsg');
-
-            errEl.classList.add('hidden');
-            if (mode === 'signup') {
-                signupTab.className = 'py-2 rounded-xl text-xs sm:text-sm font-bold bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm transition-all';
-                loginTab.className = 'py-2 rounded-xl text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-400 transition-all';
-                confirmWrap.classList.remove('hidden');
-                confirmInput.required = true;
-                submitBtn.textContent = '계정 만들고 인증 메일 받기';
-            } else {
-                loginTab.className = 'py-2 rounded-xl text-xs sm:text-sm font-bold bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm transition-all';
-                signupTab.className = 'py-2 rounded-xl text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-400 transition-all';
-                confirmWrap.classList.add('hidden');
-                confirmInput.required = false;
-                submitBtn.textContent = '로그인하고 동기화 시작';
-            }
-        };
-
-        document.getElementById('cloudAuthForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('authEmailInput').value.trim();
-            const password = document.getElementById('authPasswordInput').value;
-            const confirmPassword = document.getElementById('authPasswordConfirmInput').value;
-            const errEl = document.getElementById('authErrorMsg');
-            const submitBtn = document.getElementById('authSubmitBtn');
-
-            errEl.classList.add('hidden');
-            if (authMode === 'signup' && password !== confirmPassword) {
-                errEl.textContent = '비밀번호 확인이 일치하지 않습니다.';
-                errEl.classList.remove('hidden');
-                return;
-            }
-
-            const prevText = submitBtn.textContent;
-            submitBtn.disabled = true;
-            submitBtn.textContent = '처리 중...';
-
-            try {
-                if (authMode === 'signup') {
-                    const cred = await createUserWithEmailAndPassword(auth, email, password);
-                    await sendEmailVerification(cred.user);
-                    showToast('📧 인증 메일을 발송했습니다! 메일함을 확인해 주세요.');
-                } else {
-                    await signInWithEmailAndPassword(auth, email, password);
-                    showToast('☁️ 클라우드 계정에 로그인되었습니다!');
-                }
-            } catch (error) {
-                errEl.textContent = getAuthErrorMessage(error);
-                errEl.classList.remove('hidden');
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = prevText;
-            }
-        });
-
-        window.handlePasswordReset = async function() {
-            const email = document.getElementById('authEmailInput').value.trim();
+        window.handleGoogleLogin = async function() {
+            const btn = document.getElementById('googleSignInBtn');
             const errEl = document.getElementById('authErrorMsg');
             errEl.classList.add('hidden');
-            if (!email) {
-                errEl.textContent = '비밀번호 재설정 메일을 받을 이메일을 먼저 입력해 주세요.';
-                errEl.classList.remove('hidden');
-                return;
-            }
-            try {
-                await sendPasswordResetEmail(auth, email);
-                showToast('✉️ 비밀번호 재설정 메일을 보냈습니다.');
-            } catch (error) {
-                errEl.textContent = getAuthErrorMessage(error);
-                errEl.classList.remove('hidden');
-            }
-        };
-
-        window.checkEmailVerification = async function() {
-            if (!auth.currentUser) return;
-            const btn = document.getElementById('checkVerificationBtn');
+            const prevHtml = btn.innerHTML;
             btn.disabled = true;
-            btn.textContent = '확인 중...';
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i><span>Google 로그인 진행 중...</span>`;
+            lucide.createIcons();
+
             try {
-                await auth.currentUser.reload();
-                await auth.currentUser.getIdToken(true);
-                if (auth.currentUser.emailVerified) {
-                    showToast('✅ 이메일 인증이 완료되었습니다!');
-                    handleAuthenticatedUser(auth.currentUser);
-                } else {
-                    showToast('⚠️ 아직 이메일 인증이 완료되지 않았습니다. 메일함의 링크를 눌러주세요.');
-                }
+                await signInWithGoogle();
             } catch (error) {
-                showToast('⚠️ 인증 상태 확인 중 오류가 발생했습니다.');
+                errEl.textContent = getAuthErrorMessage(error);
+                errEl.classList.remove('hidden');
             } finally {
                 btn.disabled = false;
-                btn.textContent = '이메일 인증 완료 확인';
+                btn.innerHTML = prevHtml;
+                lucide.createIcons();
             }
         };
 
-        window.resendVerificationEmail = async function() {
-            if (!auth.currentUser) return;
+        window.switchGoogleAccount = async function() {
+            const errEl = document.getElementById('authErrorMsg');
+            errEl.classList.add('hidden');
             try {
-                await sendEmailVerification(auth.currentUser);
-                showToast('📧 인증 메일을 다시 보냈습니다.');
+                await signInWithGoogle();
             } catch (error) {
-                showToast(`⚠️ ${getAuthErrorMessage(error)}`);
+                showCloudAuthScreen('login');
+                errEl.textContent = getAuthErrorMessage(error);
+                errEl.classList.remove('hidden');
             }
         };
 
         window.logoutCloudAccount = async function() {
+            if (unsubscribeVault) {
+                unsubscribeVault();
+                unsubscribeVault = null;
+            }
             if (unsubscribeSnapshot) {
                 unsubscribeSnapshot();
                 unsubscribeSnapshot = null;
             }
             items = [];
             currentUser = null;
-            setSyncBadgeState(null);
+            activeVault = null;
+            activeAllowedEmails = [PRIMARY_OWNER_EMAIL];
+            setSyncBadgeState(null, null);
             await signOut(auth);
             showToast('로그아웃되었습니다.');
         };
 
-        function handleAuthenticatedUser(user) {
+        window.openSharedAccountsModal = function() {
+            if (!currentUser || !activeVault) return;
+            const isAdmin = isPrimaryAdminUser(currentUser);
+            const extras = (activeVault.allowedEmails || []).filter(
+                (email) => email.toLowerCase() !== PRIMARY_OWNER_EMAIL
+            );
+            document.getElementById('primaryAdminEmailDisplay').value = PRIMARY_OWNER_EMAIL;
+            const input1 = document.getElementById('sharedEmail1Input');
+            const input2 = document.getElementById('sharedEmail2Input');
+            const hint = document.getElementById('sharedAccountsHint');
+            const saveBtn = document.getElementById('saveSharedAccountsBtn');
+
+            input1.value = extras[0] || '';
+            input2.value = extras[1] || '';
+            input1.disabled = !isAdmin;
+            input2.disabled = !isAdmin;
+
+            if (isAdmin) {
+                hint.classList.add('hidden');
+                saveBtn.classList.remove('hidden');
+            } else {
+                hint.textContent = `공유 계정 편집은 관리자(${PRIMARY_OWNER_EMAIL})로 로그인했을 때만 가능합니다.`;
+                hint.classList.remove('hidden');
+                saveBtn.classList.add('hidden');
+            }
+
+            const modal = document.getElementById('sharedAccountsModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            lucide.createIcons();
+        };
+
+        window.closeSharedAccountsModal = function() {
+            const modal = document.getElementById('sharedAccountsModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        };
+
+        document.getElementById('sharedAccountsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!currentUser || !isPrimaryAdminUser(currentUser)) return;
+            const email1 = document.getElementById('sharedEmail1Input').value.trim();
+            const email2 = document.getElementById('sharedEmail2Input').value.trim();
+            const btn = document.getElementById('saveSharedAccountsBtn');
+            const prevText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = '동기화 중...';
+            try {
+                const updatedList = await updateVaultAllowedEmails(currentUser, [email1, email2]);
+                activeAllowedEmails = updatedList;
+                if (activeVault) activeVault.allowedEmails = updatedList;
+                setSyncBadgeState(currentUser, activeVault);
+                closeSharedAccountsModal();
+                showToast(`✅ 허용 계정 ${updatedList.length}개가 동기화되었습니다!`);
+            } catch (error) {
+                showToast(`⚠️ ${error instanceof Error ? error.message : '공유 설정 저장에 실패했습니다.'}`);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = prevText;
+            }
+        });
+
+        async function handleAuthenticatedUser(user) {
             currentUser = user;
+            if (unsubscribeVault) {
+                unsubscribeVault();
+                unsubscribeVault = null;
+            }
+            if (unsubscribeSnapshot) {
+                unsubscribeSnapshot();
+                unsubscribeSnapshot = null;
+            }
+
             if (!user) {
-                if (unsubscribeSnapshot) {
-                    unsubscribeSnapshot();
-                    unsubscribeSnapshot = null;
-                }
                 items = [];
-                setSyncBadgeState(null);
-                if (isUnlocked) showCloudAuthScreen('form');
+                activeVault = null;
+                activeAllowedEmails = [PRIMARY_OWNER_EMAIL];
+                setSyncBadgeState(null, null);
+                if (isUnlocked) showCloudAuthScreen('login');
                 return;
             }
 
-            if (!user.emailVerified) {
-                setSyncBadgeState(user);
-                if (isUnlocked) showCloudAuthScreen('verify', user.email || '');
-                return;
-            }
+            try {
+                const vault = await loadOrInitSharedVault(user);
+                if (auth.currentUser?.uid !== user.uid) return;
 
-            setSyncBadgeState(user);
-            if (isUnlocked) {
-                hideCloudAuthScreen();
+                activeVault = vault;
+                activeAllowedEmails = vault.allowedEmails || [PRIMARY_OWNER_EMAIL];
+                setSyncBadgeState(user, vault);
+                if (isUnlocked) {
+                    hideCloudAuthScreen();
+                }
+
+                unsubscribeVault = subscribeSharedVault(
+                    (updatedVault) => {
+                        const myEmail = (user.email || '').toLowerCase();
+                        if (!updatedVault || !updatedVault.allowedEmails?.includes(myEmail)) {
+                            activeVault = null;
+                            if (unsubscribeSnapshot) {
+                                unsubscribeSnapshot();
+                                unsubscribeSnapshot = null;
+                            }
+                            items = [];
+                            setSyncBadgeState(null, null);
+                            if (isUnlocked) showCloudAuthScreen('denied', user.email || '');
+                            return;
+                        }
+                        activeVault = updatedVault;
+                        activeAllowedEmails = updatedVault.allowedEmails;
+                        setSyncBadgeState(user, updatedVault);
+                    },
+                    (err) => {
+                        console.error('공유 보관함 감시 오류:', err);
+                    }
+                );
+
+                subscribeUserItems(user.email || '');
+            } catch (error) {
+                items = [];
+                activeVault = null;
+                setSyncBadgeState(null, null);
+                if (isUnlocked) showCloudAuthScreen('denied', user.email || '');
             }
-            subscribeUserItems(user.uid);
         }
 
         // Firestore 인증 및 실시간 구독 초기화
         function initCloudSync() {
             onAuthStateChanged(auth, (user) => {
-                handleAuthenticatedUser(user);
+                void handleAuthenticatedUser(user);
             });
         }
 
-        // Firestore 사용자 컬렉션 실시간 구독
-        function subscribeUserItems(userId) {
+        // Firestore 공유 컬렉션 실시간 구독
+        function subscribeUserItems(userEmail) {
             if (unsubscribeSnapshot) unsubscribeSnapshot();
             unsubscribeSnapshot = subscribeVaultItems(
-                userId,
+                userEmail,
                 (loaded) => {
                     items = loaded;
                     onDataLoaded();
@@ -1129,7 +1191,7 @@
             renderTagCloud();
             renderItems();
 
-            if (isUnlocked && currentUser?.emailVerified && pendingSharedItemId) {
+            if (isUnlocked && currentUser && activeVault && pendingSharedItemId) {
                 const sharedTargetId = pendingSharedItemId;
                 pendingSharedItemId = null;
                 const matched = items.find(i => i.id === sharedTargetId);
@@ -1143,12 +1205,12 @@
 
         // Firestore 항목 저장/업데이트 헬퍼
         async function saveItemToCloud(item) {
-            if (!currentUser || !currentUser.emailVerified) {
-                showToast('⚠️ 먼저 이메일 로그인 및 인증을 완료해 주세요.');
+            if (!currentUser || !activeVault) {
+                showToast('⚠️ 허용된 Google 계정으로 먼저 로그인해 주세요.');
                 return;
             }
             try {
-                await createVaultItem(currentUser.uid, item);
+                await createVaultItem(currentUser.uid, activeAllowedEmails, item);
             } catch (error) {
                 showToast('⚠️ 저장 중 오류가 발생했습니다.');
                 throw error;
@@ -1157,12 +1219,12 @@
 
         // Firestore 항목 부분 수정 헬퍼
         async function updateItemInCloud(id, partialData) {
-            if (!currentUser || !currentUser.emailVerified) {
-                showToast('⚠️ 먼저 이메일 로그인 및 인증을 완료해 주세요.');
+            if (!currentUser || !activeVault) {
+                showToast('⚠️ 허용된 Google 계정으로 먼저 로그인해 주세요.');
                 return;
             }
             try {
-                await updateVaultItem(currentUser.uid, id, partialData);
+                await updateVaultItem(id, partialData);
             } catch (error) {
                 showToast('⚠️ 수정 중 오류가 발생했습니다.');
                 throw error;
@@ -1171,12 +1233,12 @@
 
         // Firestore 항목 삭제 헬퍼
         async function deleteItemFromCloud(id) {
-            if (!currentUser || !currentUser.emailVerified) {
-                showToast('⚠️ 먼저 이메일 로그인 및 인증을 완료해 주세요.');
+            if (!currentUser || !activeVault) {
+                showToast('⚠️ 허용된 Google 계정으로 먼저 로그인해 주세요.');
                 return;
             }
             try {
-                await deleteVaultItem(currentUser.uid, id);
+                await deleteVaultItem(id);
             } catch (error) {
                 showToast('⚠️ 삭제 중 오류가 발생했습니다.');
                 throw error;
@@ -1362,7 +1424,7 @@
             const localItems = loadLocalItems();
             const migrateBtn = document.getElementById('migrateLocalBtn');
             if (migrateBtn) {
-                if (localItems.length > 0 && currentUser?.emailVerified) {
+                if (localItems.length > 0 && currentUser && activeVault) {
                     migrateBtn.classList.remove('hidden');
                     migrateBtn.classList.add('flex');
                 } else {
@@ -2007,6 +2069,9 @@
         });
         document.getElementById('backupModal').addEventListener('click', (e) => {
             if (e.target.id === 'backupModal') closeBackupModal();
+        });
+        document.getElementById('sharedAccountsModal').addEventListener('click', (e) => {
+            if (e.target.id === 'sharedAccountsModal') closeSharedAccountsModal();
         });
 
         function showToast(message) {
