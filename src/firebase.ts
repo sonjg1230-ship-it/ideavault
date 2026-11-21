@@ -494,8 +494,12 @@ export function getAuthErrorMessage(error: unknown): string {
       return '브라우저에서 팝업이 차단되었습니다. 팝업 허용 후 다시 시도해 주세요.';
     case 'auth/cancelled-popup-request':
       return '이미 로그인 창이 열려 있습니다.';
-    case 'auth/unauthorized-domain':
-      return '현재 도메인이 Firebase 승인된 도메인에 등록되어 있지 않습니다.';
+    case 'auth/unauthorized-domain': {
+      const host = typeof window !== 'undefined' ? window.location.hostname : '';
+      return host
+        ? `현재 도메인(${host})이 Firebase 승인된 도메인에 등록되어 있지 않습니다.`
+        : '현재 도메인이 Firebase 승인된 도메인에 등록되어 있지 않습니다.';
+    }
     case 'auth/network-request-failed':
       return '네트워크 연결을 확인한 뒤 다시 시도해 주세요.';
     case 'auth/too-many-requests':
