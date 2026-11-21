@@ -80,8 +80,8 @@
 <body class="bg-[#F6F7FB] text-slate-900 dark:bg-[#0B0F19] dark:text-slate-100 min-h-screen flex flex-col relative overflow-x-hidden pb-24 md:pb-8">
 
     <!-- 4자리 비밀번호 잠금 화면 -->
-    <div id="pinLockScreen" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#F6F7FB]/95 dark:bg-[#0B0F19]/95 backdrop-blur-2xl">
-        <div id="pinLockCard" class="bg-white/95 dark:bg-slate-900/95 rounded-3xl max-w-sm w-full p-6 sm:p-8 shadow-2xl border border-slate-200/80 dark:border-slate-800 text-center">
+    <div id="pinLockScreen" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#F6F7FB]/95 dark:bg-[#0B0F19]/95 backdrop-blur-2xl overflow-y-auto">
+        <div id="pinLockCard" class="bg-white/95 dark:bg-slate-900/95 rounded-3xl max-w-sm w-full p-6 sm:p-8 shadow-2xl border border-slate-200/80 dark:border-slate-800 text-center my-auto">
             <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-0.5 shadow-lg shadow-indigo-500/30">
                 <div class="w-full h-full bg-white/15 backdrop-blur-sm rounded-[14px] flex items-center justify-center">
                     <i data-lucide="lock" class="w-8 h-8 text-white"></i>
@@ -107,89 +107,22 @@
 
             <!-- 숫자 키패드 -->
             <div class="grid grid-cols-3 gap-2.5 sm:gap-3 max-w-[260px] mx-auto select-none">
-                <button type="button" onclick="appendPinDigit('1')" class="h-14 rounded-2xl bg-slate-100 hover:bg-indigo-50 dark:bg-slate-800 dark:hover:bg-indigo-950/60 text-lg font-bold text-slate-800 dark:text-slate-100 transition-all active:scale-90">1</button>
-                <button type="button" onclick="appendPinDigit('2')" class="h-14 rounded-2xl bg-slate-100 hover:bg-indigo-50 dark:bg-slate-800 dark:hover:bg-indigo-950/60 text-lg font-bold text-slate-800 dark:text-slate-100 transition-all active:scale-90">2</button>
-                <button type="button" onclick="appendPinDigit('3')" class="h-14 rounded-2xl bg-slate-100 hover:bg-indigo-50 dark:bg-slate-800 dark:hover:bg-indigo-950/60 text-lg font-bold text-slate-800 dark:text-slate-100 transition-all active:scale-90">3</button>
-                <button type="button" onclick="appendPinDigit('4')" class="h-14 rounded-2xl bg-slate-100 hover:bg-indigo-50 dark:bg-slate-800 dark:hover:bg-indigo-950/60 text-lg font-bold text-slate-800 dark:text-slate-100 transition-all active:scale-90">4</button>
-                <button type="button" onclick="appendPinDigit('5')" class="h-14 rounded-2xl bg-slate-100 hover:bg-indigo-50 dark:bg-slate-800 dark:hover:bg-indigo-950/60 text-lg font-bold text-slate-800 dark:text-slate-100 transition-all active:scale-90">5</button>
-                <button type="button" onclick="appendPinDigit('6')" class="h-14 rounded-2xl bg-slate-100 hover:bg-indigo-50 dark:bg-slate-800 dark:hover:bg-indigo-950/60 text-lg font-bold text-slate-800 dark:text-slate-100 transition-all active:scale-90">6</button>
-                <button type="button" onclick="appendPinDigit('7')" class="h-14 rounded-2xl bg-slate-100 hover:bg-indigo-50 dark:bg-slate-800 dark:hover:bg-indigo-950/60 text-lg font-bold text-slate-800 dark:text-slate-100 transition-all active:scale-90">7</button>
-                <button type="button" onclick="appendPinDigit('8')" class="h-14 rounded-2xl bg-slate-100 hover:bg-indigo-50 dark:bg-slate-800 dark:hover:bg-indigo-950/60 text-lg font-bold text-slate-800 dark:text-slate-100 transition-all active:scale-90">8</button>
-                <button type="button" onclick="appendPinDigit('9')" class="h-14 rounded-2xl bg-slate-100 hover:bg-indigo-50 dark:bg-slate-800 dark:hover:bg-indigo-950/60 text-lg font-bold text-slate-800 dark:text-slate-100 transition-all active:scale-90">9</button>
-                <button type="button" onclick="clearPinDigits()" class="h-14 rounded-2xl bg-slate-50 hover:bg-slate-200 dark:bg-slate-800/50 dark:hover:bg-slate-700 text-xs font-bold text-slate-500 dark:text-slate-400 transition-all active:scale-90">초기화</button>
-                <button type="button" onclick="appendPinDigit('0')" class="h-14 rounded-2xl bg-slate-100 hover:bg-indigo-50 dark:bg-slate-800 dark:hover:bg-indigo-950/60 text-lg font-bold text-slate-800 dark:text-slate-100 transition-all active:scale-90">0</button>
-                <button type="button" onclick="backspacePinDigit()" class="h-14 rounded-2xl bg-slate-50 hover:bg-slate-200 dark:bg-slate-800/50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center transition-all active:scale-90" aria-label="지우기">
+                <button type="button" onclick="appendPinDigit('1')" style="touch-action: manipulation;" class="h-14 rounded-2xl bg-slate-100 hover:bg-indigo-50 dark:bg-slate-800 dark:hover:bg-indigo-950/60 text-lg font-bold text-slate-800 dark:text-slate-100 transition-all active:scale-90">1</button>
+                <button type="button" onclick="appendPinDigit('2')" style="touch-action: manipulation;" class="h-14 rounded-2xl bg-slate-100 hover:bg-indigo-50 dark:bg-slate-800 dark:hover:bg-indigo-950/60 text-lg font-bold text-slate-800 dark:text-slate-100 transition-all active:scale-90">2</button>
+                <button type="button" onclick="appendPinDigit('3')" style="touch-action: manipulation;" class="h-14 rounded-2xl bg-slate-100 hover:bg-indigo-50 dark:bg-slate-800 dark:hover:bg-indigo-950/60 text-lg font-bold text-slate-800 dark:text-slate-100 transition-all active:scale-90">3</button>
+                <button type="button" onclick="appendPinDigit('4')" style="touch-action: manipulation;" class="h-14 rounded-2xl bg-slate-100 hover:bg-indigo-50 dark:bg-slate-800 dark:hover:bg-indigo-950/60 text-lg font-bold text-slate-800 dark:text-slate-100 transition-all active:scale-90">4</button>
+                <button type="button" onclick="appendPinDigit('5')" style="touch-action: manipulation;" class="h-14 rounded-2xl bg-slate-100 hover:bg-indigo-50 dark:bg-slate-800 dark:hover:bg-indigo-950/60 text-lg font-bold text-slate-800 dark:text-slate-100 transition-all active:scale-90">5</button>
+                <button type="button" onclick="appendPinDigit('6')" style="touch-action: manipulation;" class="h-14 rounded-2xl bg-slate-100 hover:bg-indigo-50 dark:bg-slate-800 dark:hover:bg-indigo-950/60 text-lg font-bold text-slate-800 dark:text-slate-100 transition-all active:scale-90">6</button>
+                <button type="button" onclick="appendPinDigit('7')" style="touch-action: manipulation;" class="h-14 rounded-2xl bg-slate-100 hover:bg-indigo-50 dark:bg-slate-800 dark:hover:bg-indigo-950/60 text-lg font-bold text-slate-800 dark:text-slate-100 transition-all active:scale-90">7</button>
+                <button type="button" onclick="appendPinDigit('8')" style="touch-action: manipulation;" class="h-14 rounded-2xl bg-slate-100 hover:bg-indigo-50 dark:bg-slate-800 dark:hover:bg-indigo-950/60 text-lg font-bold text-slate-800 dark:text-slate-100 transition-all active:scale-90">8</button>
+                <button type="button" onclick="appendPinDigit('9')" style="touch-action: manipulation;" class="h-14 rounded-2xl bg-slate-100 hover:bg-indigo-50 dark:bg-slate-800 dark:hover:bg-indigo-950/60 text-lg font-bold text-slate-800 dark:text-slate-100 transition-all active:scale-90">9</button>
+                <button type="button" onclick="clearPinDigits()" style="touch-action: manipulation;" class="h-14 rounded-2xl bg-slate-50 hover:bg-slate-200 dark:bg-slate-800/50 dark:hover:bg-slate-700 text-xs font-bold text-slate-500 dark:text-slate-400 transition-all active:scale-90">초기화</button>
+                <button type="button" onclick="appendPinDigit('0')" style="touch-action: manipulation;" class="h-14 rounded-2xl bg-slate-100 hover:bg-indigo-50 dark:bg-slate-800 dark:hover:bg-indigo-950/60 text-lg font-bold text-slate-800 dark:text-slate-100 transition-all active:scale-90">0</button>
+                <button type="button" onclick="backspacePinDigit()" style="touch-action: manipulation;" class="h-14 rounded-2xl bg-slate-50 hover:bg-slate-200 dark:bg-slate-800/50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center transition-all active:scale-90" aria-label="지우기">
                     <i data-lucide="delete" class="w-5 h-5"></i>
                 </button>
             </div>
             <p class="mt-5 text-[11px] text-slate-400 dark:text-slate-500">키보드 숫자 입력도 지원합니다</p>
-        </div>
-    </div>
-
-    <!-- 클라우드 Google 계정 로그인 & 접근 허용 안내 화면 (PIN 잠금 해제 후 미로그인/미허용 시 표시) -->
-    <div id="cloudAuthScreen" class="fixed inset-0 z-[90] hidden items-center justify-center p-4 bg-[#F6F7FB]/95 dark:bg-[#0B0F19]/95 backdrop-blur-2xl overflow-y-auto">
-        <div class="bg-white/95 dark:bg-slate-900/95 rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-200/80 dark:border-slate-800">
-            <div class="flex items-center justify-between mb-5">
-                <div class="flex items-center gap-2.5">
-                    <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-md shadow-indigo-500/25">
-                        <i data-lucide="users" class="w-5 h-5 text-white"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-lg font-extrabold text-slate-900 dark:text-white leading-tight">공유 보관함 로그인</h2>
-                        <p class="text-[11px] text-slate-500 dark:text-slate-400">허용된 Google 계정 2개(PC · 모바일) 실시간 연동</p>
-                    </div>
-                </div>
-                <button type="button" onclick="lockVault()" class="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="다시 잠그기">
-                    <i data-lucide="lock" class="w-4 h-4"></i>
-                </button>
-            </div>
-
-            <!-- Google 로그인 카드 -->
-            <div id="googleLoginCard">
-                <div class="p-4 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/50 mb-5 text-left space-y-1.5">
-                    <p class="text-xs font-bold text-indigo-700 dark:text-indigo-300 flex items-center gap-1.5">
-                        <i data-lucide="shield-check" class="w-4 h-4"></i>
-                        <span>PC · 모바일 다른 구글 계정도 함께 사용</span>
-                    </p>
-                    <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                        허용 목록에 등록된 Google 계정으로 로그인하면 PC와 모바일에서 동일한 보관함을 실시간으로 공유합니다. 그 외 계정은 접근이 차단됩니다.
-                    </p>
-                </div>
-
-                <p id="authErrorMsg" class="hidden text-xs font-semibold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 px-3 py-2.5 rounded-xl mb-4"></p>
-
-                <button type="button" id="googleSignInBtn" onclick="handleGoogleLogin()" class="w-full py-3.5 px-4 rounded-2xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/80 border-2 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 text-sm font-bold shadow-sm flex items-center justify-center gap-3 transition-all active:scale-95">
-                    <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24">
-                        <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17Z"/>
-                        <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.96H1.29v3.14C3.26 21.3 7.31 24 12 24Z"/>
-                        <path fill="#FBBC05" d="M5.28 14.24c-.24-.72-.38-1.49-.38-2.24s.14-1.52.38-2.24V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.99-3.14Z"/>
-                        <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.99 3.14c.95-2.85 3.6-4.96 6.72-4.96Z"/>
-                    </svg>
-                    <span>Google 계정으로 로그인</span>
-                </button>
-            </div>
-
-            <!-- 접근 권한 없음 카드 -->
-            <div id="accessDeniedCard" class="hidden text-center">
-                <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-rose-100 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 flex items-center justify-center">
-                    <i data-lucide="shield-alert" class="w-7 h-7"></i>
-                </div>
-                <h3 class="text-base font-extrabold text-slate-900 dark:text-white mb-1.5">접근이 허용되지 않은 계정입니다</h3>
-                <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-3 leading-relaxed">
-                    현재 로그인된 계정(<span id="deniedUserEmail" class="font-bold text-rose-600 dark:text-rose-400 break-all"></span>)은 공유 보관함 허용 목록에 등록되어 있지 않습니다.
-                </p>
-                <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/70 text-[11px] text-slate-500 dark:text-slate-400 mb-5 leading-relaxed text-left">
-                    모바일 계정을 새로 연결하려면 먼저 관리자 계정(<span id="deniedAdminHint" class="font-bold text-slate-700 dark:text-slate-200"></span>)으로 로그인한 뒤, 상단의 <strong>공유 계정</strong> 버튼에서 이 계정을 허용 목록에 등록해 주세요.
-                </div>
-                <div class="space-y-2.5">
-                    <button type="button" onclick="switchGoogleAccount()" class="w-full py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold shadow-md transition-all active:scale-95">
-                        다른 Google 계정으로 로그인
-                    </button>
-                    <button type="button" onclick="logoutCloudAccount()" class="w-full py-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-semibold transition-all">
-                        로그아웃
-                    </button>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -230,10 +163,10 @@
                         <span class="font-extrabold text-lg sm:text-xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400 leading-none">
                             IdeaVault
                         </span>
-                        <!-- 실시간 동기화 상태 배지 -->
-                        <span id="syncStatusBadge" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300" title="클라우드 실시간 동기화 중">
+                        <!-- 저장 상태 배지 -->
+                        <span id="syncStatusBadge" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300" title="이 기기 브라우저에 자동 저장됨">
                             <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                            <span class="hidden sm:inline">동기화됨</span>
+                            <span class="hidden sm:inline">자동 저장</span>
                         </span>
                     </div>
                     <span class="text-[10px] sm:text-[11px] font-medium text-slate-400 dark:text-slate-500 block mt-0.5">나만의 AI 영감 놀이터</span>
@@ -249,16 +182,6 @@
 
             <!-- 우측 액션 버튼들 -->
             <div class="flex items-center gap-1.5 sm:gap-2.5">
-                <!-- 공유 구글 계정 관리 버튼 -->
-                <button id="shareAccountsBtn" onclick="openSharedAccountsModal()" class="hidden p-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-700 transition-all active:scale-90" title="공유 Google 계정 설정">
-                    <i data-lucide="users" class="w-5 h-5 text-emerald-500 dark:text-emerald-400"></i>
-                </button>
-
-                <!-- 계정 로그아웃 버튼 -->
-                <button id="logoutBtn" onclick="logoutCloudAccount()" class="hidden p-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-700 transition-all active:scale-90" title="Google 계정 로그아웃">
-                    <i data-lucide="log-out" class="w-5 h-5 text-slate-500 dark:text-slate-300"></i>
-                </button>
-
                 <!-- 화면 잠금 버튼 -->
                 <button onclick="lockVault()" class="p-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-700 transition-all active:scale-90" title="보관함 잠그기">
                     <i data-lucide="lock" class="w-5 h-5 text-rose-500 dark:text-rose-400"></i>
@@ -619,10 +542,9 @@
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
-            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-3 leading-relaxed">
-                모든 기록은 허용된 Google 계정(PC · 모바일) 간에 실시간 동기화됩니다. JSON 파일로 별도 백업하거나 복원할 수 있습니다.
+            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-5 leading-relaxed">
+                모든 기록은 현재 기기 브라우저에 자동 저장됩니다. JSON 파일로 백업하거나 복원할 수 있습니다.
             </p>
-            <p id="backupAccountInfo" class="hidden text-xs font-semibold text-indigo-600 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/50 px-3 py-2 rounded-xl mb-4"></p>
             <div class="space-y-3">
                 <button onclick="exportDataJSON()" class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold shadow-md transition-all">
                     <i data-lucide="download" class="w-4 h-4"></i>
@@ -633,54 +555,7 @@
                     <span>백업 파일에서 복원하기 (.json)</span>
                     <input type="file" accept=".json" class="hidden" onchange="importDataJSON(event)">
                 </label>
-                <button id="migrateLocalBtn" onclick="migrateLocalItemsToCloud()" class="hidden w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 text-sm font-bold transition-all">
-                    <i data-lucide="cloud-upload" class="w-4 h-4"></i>
-                    <span>이 기기의 기존 로컬 기록 클라우드로 가져오기</span>
-                </button>
             </div>
-        </div>
-    </div>
-
-    <!-- 공유 Google 계정(PC + 모바일) 관리 모달 -->
-    <div id="sharedAccountsModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800">
-            <div class="flex items-center justify-between mb-3">
-                <h3 class="text-lg font-extrabold flex items-center gap-2">
-                    <i data-lucide="users" class="w-5 h-5 text-emerald-500"></i>
-                    <span>공유 Google 계정 관리</span>
-                </h3>
-                <button onclick="closeSharedAccountsModal()" class="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-4 leading-relaxed">
-                여기에 등록된 Google 계정만 이 보관함을 열람·수정할 수 있습니다. 모바일에서 다른 구글 계정을 사용 중이라면 아래에 추가해 주세요.
-            </p>
-
-            <form id="sharedAccountsForm" class="space-y-3.5">
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">기본 관리자 계정 (PC)</label>
-                    <input type="text" id="primaryAdminEmailDisplay" readonly
-                        class="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-sm text-slate-600 dark:text-slate-300 font-semibold outline-none">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">함께 공유할 Google 계정 (모바일 등)</label>
-                    <input type="email" id="sharedEmail1Input" placeholder="예: mobile.account@gmail.com"
-                        class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm outline-none focus:border-emerald-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">추가 공유 Google 계정 <span class="text-[11px] font-normal text-slate-400">(선택)</span></label>
-                    <input type="email" id="sharedEmail2Input" placeholder="예: another.account@gmail.com"
-                        class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm outline-none focus:border-emerald-500">
-                </div>
-
-                <p id="sharedAccountsHint" class="hidden text-xs font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-3 py-2 rounded-xl"></p>
-
-                <div class="flex items-center justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeSharedAccountsModal()" class="px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">닫기</button>
-                    <button type="submit" id="saveSharedAccountsBtn" class="px-5 py-2.5 rounded-xl text-sm font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-md transition-all">저장하고 동기화</button>
-                </div>
-            </form>
         </div>
     </div>
 
@@ -691,28 +566,11 @@
     </div>
 
     <script type="module">
-        import {
-            auth,
-            PRIMARY_OWNER_EMAIL,
-            onAuthStateChanged,
-            signInWithGoogle,
-            signOut,
-            isPrimaryAdminUser,
-            loadOrInitSharedVault,
-            subscribeSharedVault,
-            updateVaultAllowedEmails,
-            subscribeVaultItems,
-            createVaultItem,
-            updateVaultItem,
-            deleteVaultItem,
-            getAuthErrorMessage,
-        } from "/src/firebase.ts";
-
-        let currentUser = null;
-        let activeVault = null;
-        let activeAllowedEmails = [PRIMARY_OWNER_EMAIL];
-        let unsubscribeVault = null;
-        let unsubscribeSnapshot = null;
+        function refreshIcons() {
+            if (window.lucide && typeof window.lucide.createIcons === 'function') {
+                window.lucide.createIcons();
+            }
+        }
 
         // 3D 스타일 커스텀 SVG 아이콘 세트
         const icons3D = {
@@ -773,7 +631,7 @@
         let selectedTagFilter = '';
         let searchQuery = '';
         let isUnlocked = false;
-        let cloudInitialized = false;
+        let vaultInitialized = false;
         let enteredPin = '';
         let isCheckingPin = false;
         let pendingSharedItemId = new URLSearchParams(window.location.search).get('item');
@@ -781,10 +639,12 @@
         const PIN_HASH_HEX = '038a612af41a284c0470aac9eca47614416b66aceca6c2a975452f82ef9b4bfd';
 
         async function sha256Hex(str) {
-            if (window.crypto && window.crypto.subtle) {
-                const buf = await window.crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-                return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
-            }
+            try {
+                if (window.crypto && window.crypto.subtle) {
+                    const buf = await window.crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+                    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+                }
+            } catch (e) {}
             // Secure-context fallback SHA-256
             const K = [
                 0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
@@ -849,11 +709,14 @@
                 enteredPin = '';
                 document.getElementById('pinErrorMsg').classList.add('opacity-0');
                 document.getElementById('pinLockScreen').classList.add('hidden');
-                if (!cloudInitialized) {
-                    cloudInitialized = true;
-                    initCloudSync();
+                const shell = document.getElementById('vaultAppShell');
+                shell.classList.remove('hidden');
+                shell.classList.add('flex');
+                if (!vaultInitialized) {
+                    vaultInitialized = true;
+                    initVaultData();
                 } else {
-                    handleAuthenticatedUser(auth.currentUser);
+                    onDataLoaded();
                 }
             } else {
                 updatePinDots(true);
@@ -902,12 +765,8 @@
             closeDetailModal();
             closePromoteModal();
             closeBackupModal();
-            closeSharedAccountsModal();
             updatePinDots(false);
             document.getElementById('pinErrorMsg').classList.add('opacity-0');
-            const authScreen = document.getElementById('cloudAuthScreen');
-            authScreen.classList.add('hidden');
-            authScreen.classList.remove('flex');
             const shell = document.getElementById('vaultAppShell');
             shell.classList.add('hidden');
             shell.classList.remove('flex');
@@ -924,263 +783,17 @@
             }
         }
 
-        function setSyncBadgeState(user, vault) {
-            const badge = document.getElementById('syncStatusBadge');
-            const logoutBtn = document.getElementById('logoutBtn');
-            const shareBtn = document.getElementById('shareAccountsBtn');
-            const backupAccountInfo = document.getElementById('backupAccountInfo');
-            if (user && vault) {
-                const count = (vault.allowedEmails || []).length;
-                badge.className = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300';
-                badge.title = `${user.email} 로그인됨 (공유 계정 ${count}개)`;
-                badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span><span class="hidden sm:inline">동기화 (${count}계정)</span>`;
-                if (logoutBtn) logoutBtn.classList.remove('hidden');
-                if (shareBtn) shareBtn.classList.remove('hidden');
-                if (backupAccountInfo) {
-                    backupAccountInfo.textContent = `연결된 Google 계정: ${user.email} (허용 목록 ${(vault.allowedEmails || []).join(', ')})`;
-                    backupAccountInfo.classList.remove('hidden');
-                }
-            } else {
-                badge.className = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-950/80 dark:text-amber-300';
-                badge.title = '로그인 필요';
-                badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span><span class="hidden sm:inline">미연결</span>`;
-                if (logoutBtn) logoutBtn.classList.add('hidden');
-                if (shareBtn) shareBtn.classList.add('hidden');
-                if (backupAccountInfo) backupAccountInfo.classList.add('hidden');
-            }
-        }
-
-        function showCloudAuthScreen(mode = 'login', deniedEmail = '') {
-            const screen = document.getElementById('cloudAuthScreen');
-            const loginCard = document.getElementById('googleLoginCard');
-            const deniedCard = document.getElementById('accessDeniedCard');
-            const shell = document.getElementById('vaultAppShell');
-
-            shell.classList.add('hidden');
-            shell.classList.remove('flex');
-            screen.classList.remove('hidden');
-            screen.classList.add('flex');
-
-            if (mode === 'denied') {
-                loginCard.classList.add('hidden');
-                deniedCard.classList.remove('hidden');
-                document.getElementById('deniedUserEmail').textContent = deniedEmail;
-                document.getElementById('deniedAdminHint').textContent = PRIMARY_OWNER_EMAIL;
-            } else {
-                deniedCard.classList.add('hidden');
-                loginCard.classList.remove('hidden');
-            }
-            lucide.createIcons();
-        }
-
-        function hideCloudAuthScreen() {
-            const screen = document.getElementById('cloudAuthScreen');
-            screen.classList.add('hidden');
-            screen.classList.remove('flex');
-            if (isUnlocked) {
-                const shell = document.getElementById('vaultAppShell');
-                shell.classList.remove('hidden');
-                shell.classList.add('flex');
-            }
-        }
-
-        window.handleGoogleLogin = async function() {
-            const btn = document.getElementById('googleSignInBtn');
-            const errEl = document.getElementById('authErrorMsg');
-            errEl.classList.add('hidden');
-            const prevHtml = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i><span>Google 로그인 진행 중...</span>`;
-            lucide.createIcons();
-
+        function saveLocalItems(nextItems) {
             try {
-                await signInWithGoogle();
-            } catch (error) {
-                errEl.textContent = getAuthErrorMessage(error);
-                errEl.classList.remove('hidden');
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = prevHtml;
-                lucide.createIcons();
-            }
-        };
-
-        window.switchGoogleAccount = async function() {
-            const errEl = document.getElementById('authErrorMsg');
-            errEl.classList.add('hidden');
-            try {
-                await signInWithGoogle();
-            } catch (error) {
-                showCloudAuthScreen('login');
-                errEl.textContent = getAuthErrorMessage(error);
-                errEl.classList.remove('hidden');
-            }
-        };
-
-        window.logoutCloudAccount = async function() {
-            if (unsubscribeVault) {
-                unsubscribeVault();
-                unsubscribeVault = null;
-            }
-            if (unsubscribeSnapshot) {
-                unsubscribeSnapshot();
-                unsubscribeSnapshot = null;
-            }
-            items = [];
-            currentUser = null;
-            activeVault = null;
-            activeAllowedEmails = [PRIMARY_OWNER_EMAIL];
-            setSyncBadgeState(null, null);
-            await signOut(auth);
-            showToast('로그아웃되었습니다.');
-        };
-
-        window.openSharedAccountsModal = function() {
-            if (!currentUser || !activeVault) return;
-            const isAdmin = isPrimaryAdminUser(currentUser);
-            const extras = (activeVault.allowedEmails || []).filter(
-                (email) => email.toLowerCase() !== PRIMARY_OWNER_EMAIL
-            );
-            document.getElementById('primaryAdminEmailDisplay').value = PRIMARY_OWNER_EMAIL;
-            const input1 = document.getElementById('sharedEmail1Input');
-            const input2 = document.getElementById('sharedEmail2Input');
-            const hint = document.getElementById('sharedAccountsHint');
-            const saveBtn = document.getElementById('saveSharedAccountsBtn');
-
-            input1.value = extras[0] || '';
-            input2.value = extras[1] || '';
-            input1.disabled = !isAdmin;
-            input2.disabled = !isAdmin;
-
-            if (isAdmin) {
-                hint.classList.add('hidden');
-                saveBtn.classList.remove('hidden');
-            } else {
-                hint.textContent = `공유 계정 편집은 관리자(${PRIMARY_OWNER_EMAIL})로 로그인했을 때만 가능합니다.`;
-                hint.classList.remove('hidden');
-                saveBtn.classList.add('hidden');
-            }
-
-            const modal = document.getElementById('sharedAccountsModal');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            lucide.createIcons();
-        };
-
-        window.closeSharedAccountsModal = function() {
-            const modal = document.getElementById('sharedAccountsModal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        };
-
-        document.getElementById('sharedAccountsForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if (!currentUser || !isPrimaryAdminUser(currentUser)) return;
-            const email1 = document.getElementById('sharedEmail1Input').value.trim();
-            const email2 = document.getElementById('sharedEmail2Input').value.trim();
-            const btn = document.getElementById('saveSharedAccountsBtn');
-            const prevText = btn.textContent;
-            btn.disabled = true;
-            btn.textContent = '동기화 중...';
-            try {
-                const updatedList = await updateVaultAllowedEmails(currentUser, [email1, email2]);
-                activeAllowedEmails = updatedList;
-                if (activeVault) activeVault.allowedEmails = updatedList;
-                setSyncBadgeState(currentUser, activeVault);
-                closeSharedAccountsModal();
-                showToast(`✅ 허용 계정 ${updatedList.length}개가 동기화되었습니다!`);
-            } catch (error) {
-                showToast(`⚠️ ${error instanceof Error ? error.message : '공유 설정 저장에 실패했습니다.'}`);
-            } finally {
-                btn.disabled = false;
-                btn.textContent = prevText;
-            }
-        });
-
-        async function handleAuthenticatedUser(user) {
-            currentUser = user;
-            if (unsubscribeVault) {
-                unsubscribeVault();
-                unsubscribeVault = null;
-            }
-            if (unsubscribeSnapshot) {
-                unsubscribeSnapshot();
-                unsubscribeSnapshot = null;
-            }
-
-            if (!user) {
-                items = [];
-                activeVault = null;
-                activeAllowedEmails = [PRIMARY_OWNER_EMAIL];
-                setSyncBadgeState(null, null);
-                if (isUnlocked) showCloudAuthScreen('login');
-                return;
-            }
-
-            try {
-                const vault = await loadOrInitSharedVault(user);
-                if (auth.currentUser?.uid !== user.uid) return;
-
-                activeVault = vault;
-                activeAllowedEmails = vault.allowedEmails || [PRIMARY_OWNER_EMAIL];
-                setSyncBadgeState(user, vault);
-                if (isUnlocked) {
-                    hideCloudAuthScreen();
-                }
-
-                unsubscribeVault = subscribeSharedVault(
-                    (updatedVault) => {
-                        const myEmail = (user.email || '').toLowerCase();
-                        if (!updatedVault || !updatedVault.allowedEmails?.includes(myEmail)) {
-                            activeVault = null;
-                            if (unsubscribeSnapshot) {
-                                unsubscribeSnapshot();
-                                unsubscribeSnapshot = null;
-                            }
-                            items = [];
-                            setSyncBadgeState(null, null);
-                            if (isUnlocked) showCloudAuthScreen('denied', user.email || '');
-                            return;
-                        }
-                        activeVault = updatedVault;
-                        activeAllowedEmails = updatedVault.allowedEmails;
-                        setSyncBadgeState(user, updatedVault);
-                    },
-                    (err) => {
-                        console.error('공유 보관함 감시 오류:', err);
-                    }
-                );
-
-                subscribeUserItems(user.email || '');
-            } catch (error) {
-                items = [];
-                activeVault = null;
-                setSyncBadgeState(null, null);
-                if (isUnlocked) showCloudAuthScreen('denied', user.email || '');
+                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(nextItems));
+            } catch (e) {
+                showToast('⚠️ 브라우저 저장 공간이 부족합니다.');
             }
         }
 
-        // Firestore 인증 및 실시간 구독 초기화
-        function initCloudSync() {
-            onAuthStateChanged(auth, (user) => {
-                void handleAuthenticatedUser(user);
-            });
-        }
-
-        // Firestore 공유 컬렉션 실시간 구독
-        function subscribeUserItems(userEmail) {
-            if (unsubscribeSnapshot) unsubscribeSnapshot();
-            unsubscribeSnapshot = subscribeVaultItems(
-                userEmail,
-                (loaded) => {
-                    items = loaded;
-                    onDataLoaded();
-                },
-                (error) => {
-                    console.error('실시간 동기화 오류:', error);
-                    showToast('⚠️ 클라우드 동기화 권한 또는 연결을 확인해 주세요.');
-                }
-            );
+        function initVaultData() {
+            items = loadLocalItems();
+            onDataLoaded();
         }
 
         function onDataLoaded() {
@@ -1191,7 +804,7 @@
             renderTagCloud();
             renderItems();
 
-            if (isUnlocked && currentUser && activeVault && pendingSharedItemId) {
+            if (isUnlocked && pendingSharedItemId) {
                 const sharedTargetId = pendingSharedItemId;
                 pendingSharedItemId = null;
                 const matched = items.find(i => i.id === sharedTargetId);
@@ -1203,46 +816,27 @@
             }
         }
 
-        // Firestore 항목 저장/업데이트 헬퍼
         async function saveItemToCloud(item) {
-            if (!currentUser || !activeVault) {
-                showToast('⚠️ 허용된 Google 계정으로 먼저 로그인해 주세요.');
-                return;
-            }
-            try {
-                await createVaultItem(currentUser.uid, activeAllowedEmails, item);
-            } catch (error) {
-                showToast('⚠️ 저장 중 오류가 발생했습니다.');
-                throw error;
-            }
+            const idx = items.findIndex(i => i.id === item.id);
+            if (idx !== -1) items[idx] = item;
+            else items.unshift(item);
+            saveLocalItems(items);
+            onDataLoaded();
         }
 
-        // Firestore 항목 부분 수정 헬퍼
         async function updateItemInCloud(id, partialData) {
-            if (!currentUser || !activeVault) {
-                showToast('⚠️ 허용된 Google 계정으로 먼저 로그인해 주세요.');
-                return;
-            }
-            try {
-                await updateVaultItem(id, partialData);
-            } catch (error) {
-                showToast('⚠️ 수정 중 오류가 발생했습니다.');
-                throw error;
+            const idx = items.findIndex(i => i.id === id);
+            if (idx !== -1) {
+                items[idx] = { ...items[idx], ...partialData, updatedAt: Date.now() };
+                saveLocalItems(items);
+                onDataLoaded();
             }
         }
 
-        // Firestore 항목 삭제 헬퍼
         async function deleteItemFromCloud(id) {
-            if (!currentUser || !activeVault) {
-                showToast('⚠️ 허용된 Google 계정으로 먼저 로그인해 주세요.');
-                return;
-            }
-            try {
-                await deleteVaultItem(id);
-            } catch (error) {
-                showToast('⚠️ 삭제 중 오류가 발생했습니다.');
-                throw error;
-            }
+            items = items.filter(i => i.id !== id);
+            saveLocalItems(items);
+            onDataLoaded();
         }
 
         // Gemini API 호출 헬퍼 (지수 백오프 적용)
@@ -1286,7 +880,7 @@
             const originalHtml = btn.innerHTML;
             btn.disabled = true;
             btn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i><span>분석 중...</span>`;
-            lucide.createIcons();
+            refreshIcons();
 
             try {
                 const prompt = `다음 메모의 핵심 주제를 나타내는 한국어 해시태그 3~5개를 추출해줘. 쉼표(,)로만 구분해서 태그 단어만 출력해줘 (기호 # 없이).\n제목: ${title}\n내용: ${content}`;
@@ -1299,7 +893,7 @@
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = originalHtml;
-                lucide.createIcons();
+                refreshIcons();
             }
         };
 
@@ -1312,7 +906,7 @@
             const originalHtml = btn.innerHTML;
             btn.disabled = true;
             btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span>AI 기획안 작성 중...</span>`;
-            lucide.createIcons();
+            refreshIcons();
 
             try {
                 const prompt = `당신은 유능한 프로덕트 기획자입니다. 아래 아이디어를 바탕으로 실행 가능한 미니 기획안을 한국어로 깔끔하게 작성해 주세요.\n\n[아이디어 제목]: ${item.title}\n[기존 메모]: ${item.content || '없음'}\n\n다음 3가지 항목으로 간결하고 명확하게 정리해 주세요:\n1. 🎯 핵심 가치 & 타겟 사용자\n2. ⚙️ 주요 핵심 기능 (3가지)\n3. 🚀 첫 번째 실행 단계 (MVP)`;
@@ -1330,7 +924,7 @@
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = originalHtml;
-                lucide.createIcons();
+                refreshIcons();
             }
         }
 
@@ -1421,17 +1015,6 @@
 
         // 📦 JSON 백업 & 복원 기능
         window.openBackupModal = function() {
-            const localItems = loadLocalItems();
-            const migrateBtn = document.getElementById('migrateLocalBtn');
-            if (migrateBtn) {
-                if (localItems.length > 0 && currentUser && activeVault) {
-                    migrateBtn.classList.remove('hidden');
-                    migrateBtn.classList.add('flex');
-                } else {
-                    migrateBtn.classList.add('hidden');
-                    migrateBtn.classList.remove('flex');
-                }
-            }
             const modal = document.getElementById('backupModal');
             modal.classList.remove('hidden');
             modal.classList.add('flex');
@@ -1441,21 +1024,6 @@
             const modal = document.getElementById('backupModal');
             modal.classList.add('hidden');
             modal.classList.remove('flex');
-        };
-
-        window.migrateLocalItemsToCloud = async function() {
-            const localItems = loadLocalItems();
-            if (localItems.length === 0) return;
-            let count = 0;
-            for (const item of localItems) {
-                if (item && item.title) {
-                    await saveItemToCloud(item);
-                    count++;
-                }
-            }
-            localStorage.removeItem(LOCAL_STORAGE_KEY);
-            closeBackupModal();
-            showToast(`☁️ 기존 로컬 기록 ${count}개를 클라우드로 가져왔습니다!`);
         };
 
         window.exportDataJSON = function() {
@@ -1471,7 +1039,9 @@
             const dateStr = new Date().toISOString().slice(0, 10);
             a.href = url;
             a.download = `IdeaVault_Backup_${dateStr}.json`;
+            document.body.appendChild(a);
             a.click();
+            document.body.removeChild(a);
             URL.revokeObjectURL(url);
             showToast('📦 백업 파일이 다운로드되었습니다!');
         };
@@ -1493,7 +1063,7 @@
                         }
                     }
                     closeBackupModal();
-                    showToast(`🎉 ${restoredCount}개의 기록이 클라우드에 복원되었습니다!`);
+                    showToast(`🎉 ${restoredCount}개의 기록이 복원되었습니다!`);
                 } catch (err) {
                     showToast('⚠️ 올바른 백업 JSON 파일이 아닙니다.');
                 }
@@ -1730,7 +1300,7 @@
                 `;
             }).join('');
 
-            lucide.createIcons();
+            refreshIcons();
         };
 
         window.toggleFavorite = async function(id) {
@@ -1880,7 +1450,7 @@
             const modal = document.getElementById('detailModal');
             modal.classList.remove('hidden');
             modal.classList.add('flex');
-            lucide.createIcons();
+            refreshIcons();
         };
 
         function fallbackCopyText(text) {
@@ -1891,6 +1461,7 @@
             textarea.style.left = '-9999px';
             document.body.appendChild(textarea);
             textarea.select();
+            textarea.setSelectionRange(0, 99999);
             document.execCommand('copy');
             document.body.removeChild(textarea);
         }
@@ -1948,7 +1519,7 @@
 
             input.value = '';
             await saveItemToCloud(newItem);
-            showToast('⚡ 아이디어가 클라우드에 즉시 저장되었습니다!');
+            showToast('⚡ 아이디어가 저장되었습니다!');
         });
 
         // 상세 모달 저장 폼
@@ -1967,7 +1538,7 @@
 
             if (id) {
                 await updateItemInCloud(id, { category, subType, title, url, content, tags });
-                showToast('✨ 수정 내용이 동기화되었습니다.');
+                showToast('✨ 수정 내용이 저장되었습니다.');
             } else {
                 const newItem = {
                     id: 'item-' + Date.now(),
@@ -2070,9 +1641,6 @@
         document.getElementById('backupModal').addEventListener('click', (e) => {
             if (e.target.id === 'backupModal') closeBackupModal();
         });
-        document.getElementById('sharedAccountsModal').addEventListener('click', (e) => {
-            if (e.target.id === 'sharedAccountsModal') closeSharedAccountsModal();
-        });
 
         function showToast(message) {
             const toast = document.getElementById('toast');
@@ -2098,11 +1666,16 @@
             }
         });
 
-        // 앱 초기화
-        window.addEventListener('DOMContentLoaded', () => {
+        // 앱 초기화 (모바일에서도 즉시 초기화되도록 readyState 분기)
+        function bootstrapApp() {
             inject3DIcons();
-            lucide.createIcons();
-        });
+            refreshIcons();
+        }
+        if (document.readyState === 'loading') {
+            window.addEventListener('DOMContentLoaded', bootstrapApp);
+        } else {
+            bootstrapApp();
+        }
     </script>
 </body>
 </html>

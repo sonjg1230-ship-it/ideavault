@@ -152,8 +152,7 @@ service cloud.firestore {
         allow get: if isVerifiedUser() && isValidId(vaultId) && isValidId(itemId) && isVaultMember(vaultId);
 
         allow list: if isVerifiedUser()
-          && resource.data.allowedEmails is list
-          && request.auth.token.email.lower() in resource.data.allowedEmails;
+          && request.auth.token.email in resource.data.allowedEmails;
 
         allow create: if isVerifiedUser()
           && isValidId(vaultId)
