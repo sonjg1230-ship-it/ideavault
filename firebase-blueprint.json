@@ -1,0 +1,87 @@
+{
+  "entities": {
+    "VaultItem": {
+      "title": "VaultItem",
+      "description": "A user-owned idea, creation, or reference item stored in IdeaVault.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier matching the Firestore document ID.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "ownerId": {
+          "type": "string",
+          "description": "Firebase Auth UID of the owner.",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "category": {
+          "type": "string",
+          "description": "Top-level item category.",
+          "enum": ["idea", "creation", "reference"]
+        },
+        "subType": {
+          "type": "string",
+          "description": "Sub-category label.",
+          "maxLength": 64
+        },
+        "title": {
+          "type": "string",
+          "description": "Title of the record.",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "url": {
+          "type": "string",
+          "description": "Optional related URL.",
+          "maxLength": 2000
+        },
+        "content": {
+          "type": "string",
+          "description": "Detailed memo content.",
+          "maxLength": 20000
+        },
+        "tags": {
+          "type": "array",
+          "description": "Up to 10 tags for filtering."
+        },
+        "favorite": {
+          "type": "boolean",
+          "description": "Whether the item is starred."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server-generated creation timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server-generated last update timestamp."
+        }
+      },
+      "required": [
+        "id",
+        "ownerId",
+        "category",
+        "subType",
+        "title",
+        "url",
+        "content",
+        "tags",
+        "favorite",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/items/{itemId}": {
+      "schema": { "$ref": "#/entities/VaultItem" },
+      "description": "Private IdeaVault items scoped strictly to the authenticated and email-verified user."
+    }
+  }
+}

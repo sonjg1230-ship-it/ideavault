@@ -1,0 +1,95 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global safety net: deny all access by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedOwner(userId) {
+      return isSignedIn()
+        && request.auth.token.email_verified == true
+        && request.auth.uid == userId;
+    }
+
+    function isValidVaultItem(data, itemId, userId) {
+      return data.keys().hasAll([
+          'id', 'ownerId', 'category', 'subType', 'title',
+          'url', 'content', 'tags', 'favorite', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'id', 'ownerId', 'category', 'subType', 'title',
+          'url', 'content', 'tags', 'favorite', 'createdAt', 'updatedAt'
+        ])
+        && isValidId(data.id)
+        && data.id == itemId
+        && data.ownerId is string
+        && data.ownerId.size() >= 1
+        && data.ownerId.size() <= 128
+        && data.ownerId == userId
+        && data.category is string
+        && data.category in ['idea', 'creation', 'reference']
+        && data.subType is string
+        && data.subType.size() <= 64
+        && data.title is string
+        && data.title.size() >= 1
+        && data.title.size() <= 200
+        && data.url is string
+        && data.url.size() <= 2000
+        && (data.url == '' || data.url.matches('^https?://.*'))
+        && data.content is string
+        && data.content.size() <= 20000
+        && data.tags is list
+        && data.tags.size() <= 10
+        && (data.tags.size() == 0 || (data.tags[0] is string && data.tags[0].size() <= 40))
+        && data.favorite is bool
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    match /users/{userId}/items/{itemId} {
+      allow get: if isVerifiedOwner(userId) && isValidId(itemId);
+      allow list: if isVerifiedOwner(userId) && resource.data.ownerId == request.auth.uid;
+
+      allow create: if isVerifiedOwner(userId)
+        && isValidId(itemId)
+        && isValidVaultItem(incoming(), itemId, userId)
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+
+      allow update: if isVerifiedOwner(userId)
+        && isValidId(itemId)
+        && isValidVaultItem(incoming(), itemId, userId)
+        && incoming().id == existing().id
+        && incoming().ownerId == existing().ownerId
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && (
+          // Action 1: Toggle favorite
+          incoming().diff(existing()).affectedKeys().hasOnly(['favorite', 'updatedAt'])
+          ||
+          // Action 2: Edit item details / promote to creation / AI expand
+          incoming().diff(existing()).affectedKeys().hasOnly(['category', 'subType', 'title', 'url', 'content', 'tags', 'updatedAt'])
+        );
+
+      allow delete: if isVerifiedOwner(userId) && isValidId(itemId);
+    }
+  }
+}

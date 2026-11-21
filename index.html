@@ -126,6 +126,95 @@
         </div>
     </div>
 
+    <!-- 클라우드 이메일/비밀번호 로그인 & 인증 화면 (PIN 잠금 해제 후 미로그인 시 표시) -->
+    <div id="cloudAuthScreen" class="fixed inset-0 z-[90] hidden items-center justify-center p-4 bg-[#F6F7FB]/95 dark:bg-[#0B0F19]/95 backdrop-blur-2xl overflow-y-auto">
+        <div class="bg-white/95 dark:bg-slate-900/95 rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-200/80 dark:border-slate-800">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-md shadow-indigo-500/25">
+                        <i data-lucide="cloud" class="w-5 h-5 text-white"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-extrabold text-slate-900 dark:text-white leading-tight">클라우드 계정 연결</h2>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400">PC · 모바일 실시간 동기화</p>
+                    </div>
+                </div>
+                <button type="button" onclick="lockVault()" class="p-2 rounded-xl text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="다시 잠그기">
+                    <i data-lucide="lock" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <!-- 로그인 / 회원가입 카드 -->
+            <div id="authFormCard">
+                <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-5 leading-relaxed">
+                    구글 계정이 달라도 상관없습니다. PC와 모바일에서 동일한 <strong>전용 이메일·비밀번호</strong>로 로그인하면 모든 기록이 실시간으로 연동됩니다.
+                </p>
+
+                <!-- 탭 전환 -->
+                <div class="grid grid-cols-2 gap-1.5 p-1 rounded-2xl bg-slate-100 dark:bg-slate-800 mb-5">
+                    <button type="button" id="authTabLogin" onclick="switchAuthMode('login')" class="py-2 rounded-xl text-xs sm:text-sm font-bold bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm transition-all">
+                        로그인
+                    </button>
+                    <button type="button" id="authTabSignup" onclick="switchAuthMode('signup')" class="py-2 rounded-xl text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-400 transition-all">
+                        새 계정 만들기
+                    </button>
+                </div>
+
+                <form id="cloudAuthForm" class="space-y-3.5">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">이메일</label>
+                        <input type="email" id="authEmailInput" required placeholder="name@example.com"
+                            class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm outline-none focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">비밀번호 <span class="text-[11px] font-normal text-slate-400">(6자 이상)</span></label>
+                        <input type="password" id="authPasswordInput" required minlength="6" placeholder="비밀번호 입력"
+                            class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm outline-none focus:border-indigo-500">
+                    </div>
+                    <div id="authConfirmWrap" class="hidden">
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">비밀번호 확인</label>
+                        <input type="password" id="authPasswordConfirmInput" minlength="6" placeholder="비밀번호 다시 입력"
+                            class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm outline-none focus:border-indigo-500">
+                    </div>
+
+                    <p id="authErrorMsg" class="hidden text-xs font-semibold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 px-3 py-2 rounded-xl"></p>
+
+                    <button type="submit" id="authSubmitBtn" class="w-full py-3 rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:opacity-95 text-white text-sm font-bold shadow-lg shadow-indigo-500/25 transition-all active:scale-95">
+                        로그인하고 동기화 시작
+                    </button>
+                </form>
+
+                <div class="mt-4 text-center">
+                    <button type="button" onclick="handlePasswordReset()" class="text-xs font-semibold text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                        비밀번호를 잊으셨나요? 재설정 메일 받기
+                    </button>
+                </div>
+            </div>
+
+            <!-- 이메일 인증 대기 카드 -->
+            <div id="verifyEmailCard" class="hidden text-center">
+                <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-amber-100 dark:bg-amber-950/50 text-amber-600 dark:text-amber-300 flex items-center justify-center">
+                    <i data-lucide="mail-check" class="w-7 h-7"></i>
+                </div>
+                <h3 class="text-base font-extrabold text-slate-900 dark:text-white mb-1.5">이메일 인증이 필요합니다</h3>
+                <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-5 leading-relaxed">
+                    <span id="verifyEmailAddress" class="font-bold text-indigo-600 dark:text-indigo-400"></span> 주소로 인증 메일을 보냈습니다. 메일의 인증 링크를 누른 뒤 아래 버튼을 눌러주세요.
+                </p>
+                <div class="space-y-2.5">
+                    <button type="button" id="checkVerificationBtn" onclick="checkEmailVerification()" class="w-full py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold shadow-md transition-all active:scale-95">
+                        이메일 인증 완료 확인
+                    </button>
+                    <button type="button" onclick="resendVerificationEmail()" class="w-full py-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-semibold transition-all">
+                        인증 메일 다시 보내기
+                    </button>
+                    <button type="button" onclick="logoutCloudAccount()" class="w-full py-2 rounded-xl text-xs font-semibold text-slate-500 hover:text-rose-500 transition-colors">
+                        다른 이메일로 로그인하기
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- 잠금 해제 후 표시되는 앱 본문 래퍼 -->
     <div id="vaultAppShell" class="hidden flex-1 flex-col min-h-screen">
 
@@ -182,6 +271,11 @@
 
             <!-- 우측 액션 버튼들 -->
             <div class="flex items-center gap-1.5 sm:gap-2.5">
+                <!-- 계정 로그아웃 버튼 -->
+                <button id="logoutBtn" onclick="logoutCloudAccount()" class="hidden p-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-700 transition-all active:scale-90" title="클라우드 계정 로그아웃">
+                    <i data-lucide="log-out" class="w-5 h-5 text-slate-500 dark:text-slate-300"></i>
+                </button>
+
                 <!-- 화면 잠금 버튼 -->
                 <button onclick="lockVault()" class="p-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-700 transition-all active:scale-90" title="보관함 잠그기">
                     <i data-lucide="lock" class="w-5 h-5 text-rose-500 dark:text-rose-400"></i>
@@ -542,9 +636,10 @@
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
-            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-5 leading-relaxed">
-                모든 기록은 클라우드에 자동 동기화됩니다. 만약을 대비해 JSON 파일로 내 기기에 별도 백업하거나 기존 백업 파일을 불러올 수 있습니다.
+            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-3 leading-relaxed">
+                모든 기록은 로그인한 클라우드 계정에 실시간 동기화됩니다. JSON 파일로 별도 백업하거나 복원할 수 있습니다.
             </p>
+            <p id="backupAccountInfo" class="hidden text-xs font-semibold text-indigo-600 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/50 px-3 py-2 rounded-xl mb-4"></p>
             <div class="space-y-3">
                 <button onclick="exportDataJSON()" class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold shadow-md transition-all">
                     <i data-lucide="download" class="w-4 h-4"></i>
@@ -555,6 +650,10 @@
                     <span>백업 파일에서 복원하기 (.json)</span>
                     <input type="file" accept=".json" class="hidden" onchange="importDataJSON(event)">
                 </label>
+                <button id="migrateLocalBtn" onclick="migrateLocalItemsToCloud()" class="hidden w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 text-sm font-bold transition-all">
+                    <i data-lucide="cloud-upload" class="w-4 h-4"></i>
+                    <span>이 기기의 기존 로컬 기록 클라우드로 가져오기</span>
+                </button>
             </div>
         </div>
     </div>
@@ -566,18 +665,24 @@
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, updateDoc, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import {
+            auth,
+            onAuthStateChanged,
+            signInWithEmailAndPassword,
+            createUserWithEmailAndPassword,
+            sendEmailVerification,
+            sendPasswordResetEmail,
+            signOut,
+            subscribeVaultItems,
+            createVaultItem,
+            updateVaultItem,
+            deleteVaultItem,
+            getAuthErrorMessage,
+        } from "/src/firebase.ts";
 
-        // Firebase 초기화
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-idea-vault';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-
-        let db = null;
-        let auth = null;
         let currentUser = null;
         let unsubscribeSnapshot = null;
+        let authMode = 'login';
 
         // 3D 스타일 커스텀 SVG 아이콘 세트
         const icons3D = {
@@ -714,14 +819,11 @@
                 enteredPin = '';
                 document.getElementById('pinErrorMsg').classList.add('opacity-0');
                 document.getElementById('pinLockScreen').classList.add('hidden');
-                const shell = document.getElementById('vaultAppShell');
-                shell.classList.remove('hidden');
-                shell.classList.add('flex');
                 if (!cloudInitialized) {
                     cloudInitialized = true;
                     initCloudSync();
                 } else {
-                    onDataLoaded();
+                    handleAuthenticatedUser(auth.currentUser);
                 }
             } else {
                 updatePinDots(true);
@@ -772,6 +874,9 @@
             closeBackupModal();
             updatePinDots(false);
             document.getElementById('pinErrorMsg').classList.add('opacity-0');
+            const authScreen = document.getElementById('cloudAuthScreen');
+            authScreen.classList.add('hidden');
+            authScreen.classList.remove('flex');
             const shell = document.getElementById('vaultAppShell');
             shell.classList.add('hidden');
             shell.classList.remove('flex');
@@ -788,59 +893,232 @@
             }
         }
 
-        function saveLocalItems() {
-            try {
-                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(items));
-            } catch (e) {}
+        function setSyncBadgeState(user) {
+            const badge = document.getElementById('syncStatusBadge');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const backupAccountInfo = document.getElementById('backupAccountInfo');
+            if (user && user.emailVerified) {
+                badge.className = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300';
+                badge.title = `${user.email} 계정에 실시간 동기화 중`;
+                badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span><span class="hidden sm:inline">동기화됨</span>`;
+                if (logoutBtn) logoutBtn.classList.remove('hidden');
+                if (backupAccountInfo) {
+                    backupAccountInfo.textContent = `연결된 동기화 계정: ${user.email}`;
+                    backupAccountInfo.classList.remove('hidden');
+                }
+            } else {
+                badge.className = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-950/80 dark:text-amber-300';
+                badge.title = '로그인 필요';
+                badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span><span class="hidden sm:inline">미연결</span>`;
+                if (logoutBtn) logoutBtn.classList.add('hidden');
+                if (backupAccountInfo) backupAccountInfo.classList.add('hidden');
+            }
         }
 
-        // Firestore 인증 및 실시간 구독 초기화
-        async function initCloudSync() {
-            if (!firebaseConfig) {
-                items = loadLocalItems();
-                onDataLoaded();
+        function showCloudAuthScreen(mode = 'form', emailForVerify = '') {
+            const screen = document.getElementById('cloudAuthScreen');
+            const formCard = document.getElementById('authFormCard');
+            const verifyCard = document.getElementById('verifyEmailCard');
+            const shell = document.getElementById('vaultAppShell');
+
+            shell.classList.add('hidden');
+            shell.classList.remove('flex');
+            screen.classList.remove('hidden');
+            screen.classList.add('flex');
+
+            if (mode === 'verify') {
+                formCard.classList.add('hidden');
+                verifyCard.classList.remove('hidden');
+                document.getElementById('verifyEmailAddress').textContent = emailForVerify;
+            } else {
+                verifyCard.classList.add('hidden');
+                formCard.classList.remove('hidden');
+            }
+            lucide.createIcons();
+        }
+
+        function hideCloudAuthScreen() {
+            const screen = document.getElementById('cloudAuthScreen');
+            screen.classList.add('hidden');
+            screen.classList.remove('flex');
+            if (isUnlocked) {
+                const shell = document.getElementById('vaultAppShell');
+                shell.classList.remove('hidden');
+                shell.classList.add('flex');
+            }
+        }
+
+        window.switchAuthMode = function(mode) {
+            authMode = mode;
+            const loginTab = document.getElementById('authTabLogin');
+            const signupTab = document.getElementById('authTabSignup');
+            const confirmWrap = document.getElementById('authConfirmWrap');
+            const confirmInput = document.getElementById('authPasswordConfirmInput');
+            const submitBtn = document.getElementById('authSubmitBtn');
+            const errEl = document.getElementById('authErrorMsg');
+
+            errEl.classList.add('hidden');
+            if (mode === 'signup') {
+                signupTab.className = 'py-2 rounded-xl text-xs sm:text-sm font-bold bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm transition-all';
+                loginTab.className = 'py-2 rounded-xl text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-400 transition-all';
+                confirmWrap.classList.remove('hidden');
+                confirmInput.required = true;
+                submitBtn.textContent = '계정 만들고 인증 메일 받기';
+            } else {
+                loginTab.className = 'py-2 rounded-xl text-xs sm:text-sm font-bold bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm transition-all';
+                signupTab.className = 'py-2 rounded-xl text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-400 transition-all';
+                confirmWrap.classList.add('hidden');
+                confirmInput.required = false;
+                submitBtn.textContent = '로그인하고 동기화 시작';
+            }
+        };
+
+        document.getElementById('cloudAuthForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('authEmailInput').value.trim();
+            const password = document.getElementById('authPasswordInput').value;
+            const confirmPassword = document.getElementById('authPasswordConfirmInput').value;
+            const errEl = document.getElementById('authErrorMsg');
+            const submitBtn = document.getElementById('authSubmitBtn');
+
+            errEl.classList.add('hidden');
+            if (authMode === 'signup' && password !== confirmPassword) {
+                errEl.textContent = '비밀번호 확인이 일치하지 않습니다.';
+                errEl.classList.remove('hidden');
                 return;
             }
 
+            const prevText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = '처리 중...';
+
             try {
-                const app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
+                if (authMode === 'signup') {
+                    const cred = await createUserWithEmailAndPassword(auth, email, password);
+                    await sendEmailVerification(cred.user);
+                    showToast('📧 인증 메일을 발송했습니다! 메일함을 확인해 주세요.');
                 } else {
-                    await signInAnonymously(auth);
+                    await signInWithEmailAndPassword(auth, email, password);
+                    showToast('☁️ 클라우드 계정에 로그인되었습니다!');
                 }
-
-                onAuthStateChanged(auth, (user) => {
-                    if (!user) return;
-                    currentUser = user;
-                    subscribeUserItems(user.uid);
-                });
             } catch (error) {
-                console.error('클라우드 연결 오류:', error);
-                items = loadLocalItems();
-                onDataLoaded();
+                errEl.textContent = getAuthErrorMessage(error);
+                errEl.classList.remove('hidden');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = prevText;
             }
+        });
+
+        window.handlePasswordReset = async function() {
+            const email = document.getElementById('authEmailInput').value.trim();
+            const errEl = document.getElementById('authErrorMsg');
+            errEl.classList.add('hidden');
+            if (!email) {
+                errEl.textContent = '비밀번호 재설정 메일을 받을 이메일을 먼저 입력해 주세요.';
+                errEl.classList.remove('hidden');
+                return;
+            }
+            try {
+                await sendPasswordResetEmail(auth, email);
+                showToast('✉️ 비밀번호 재설정 메일을 보냈습니다.');
+            } catch (error) {
+                errEl.textContent = getAuthErrorMessage(error);
+                errEl.classList.remove('hidden');
+            }
+        };
+
+        window.checkEmailVerification = async function() {
+            if (!auth.currentUser) return;
+            const btn = document.getElementById('checkVerificationBtn');
+            btn.disabled = true;
+            btn.textContent = '확인 중...';
+            try {
+                await auth.currentUser.reload();
+                await auth.currentUser.getIdToken(true);
+                if (auth.currentUser.emailVerified) {
+                    showToast('✅ 이메일 인증이 완료되었습니다!');
+                    handleAuthenticatedUser(auth.currentUser);
+                } else {
+                    showToast('⚠️ 아직 이메일 인증이 완료되지 않았습니다. 메일함의 링크를 눌러주세요.');
+                }
+            } catch (error) {
+                showToast('⚠️ 인증 상태 확인 중 오류가 발생했습니다.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '이메일 인증 완료 확인';
+            }
+        };
+
+        window.resendVerificationEmail = async function() {
+            if (!auth.currentUser) return;
+            try {
+                await sendEmailVerification(auth.currentUser);
+                showToast('📧 인증 메일을 다시 보냈습니다.');
+            } catch (error) {
+                showToast(`⚠️ ${getAuthErrorMessage(error)}`);
+            }
+        };
+
+        window.logoutCloudAccount = async function() {
+            if (unsubscribeSnapshot) {
+                unsubscribeSnapshot();
+                unsubscribeSnapshot = null;
+            }
+            items = [];
+            currentUser = null;
+            setSyncBadgeState(null);
+            await signOut(auth);
+            showToast('로그아웃되었습니다.');
+        };
+
+        function handleAuthenticatedUser(user) {
+            currentUser = user;
+            if (!user) {
+                if (unsubscribeSnapshot) {
+                    unsubscribeSnapshot();
+                    unsubscribeSnapshot = null;
+                }
+                items = [];
+                setSyncBadgeState(null);
+                if (isUnlocked) showCloudAuthScreen('form');
+                return;
+            }
+
+            if (!user.emailVerified) {
+                setSyncBadgeState(user);
+                if (isUnlocked) showCloudAuthScreen('verify', user.email || '');
+                return;
+            }
+
+            setSyncBadgeState(user);
+            if (isUnlocked) {
+                hideCloudAuthScreen();
+            }
+            subscribeUserItems(user.uid);
         }
 
-        // Firestore 사용자 컬렉션 실시간 구독 (RULE 1 & RULE 2 준수)
+        // Firestore 인증 및 실시간 구독 초기화
+        function initCloudSync() {
+            onAuthStateChanged(auth, (user) => {
+                handleAuthenticatedUser(user);
+            });
+        }
+
+        // Firestore 사용자 컬렉션 실시간 구독
         function subscribeUserItems(userId) {
             if (unsubscribeSnapshot) unsubscribeSnapshot();
-            const itemsColRef = collection(db, 'artifacts', appId, 'users', userId, 'ideaVaultItems');
-
-            unsubscribeSnapshot = onSnapshot(itemsColRef, (snapshot) => {
-                const loaded = [];
-                snapshot.forEach((docSnap) => {
-                    loaded.push({ id: docSnap.id, ...docSnap.data() });
-                });
-                items = loaded;
-                onDataLoaded();
-            }, (error) => {
-                console.error('실시간 동기화 오류:', error);
-                showToast('⚠️ 동기화 중 일시적인 오류가 발생했습니다.');
-            });
+            unsubscribeSnapshot = subscribeVaultItems(
+                userId,
+                (loaded) => {
+                    items = loaded;
+                    onDataLoaded();
+                },
+                (error) => {
+                    console.error('실시간 동기화 오류:', error);
+                    showToast('⚠️ 클라우드 동기화 권한 또는 연결을 확인해 주세요.');
+                }
+            );
         }
 
         function onDataLoaded() {
@@ -851,7 +1129,7 @@
             renderTagCloud();
             renderItems();
 
-            if (isUnlocked && pendingSharedItemId) {
+            if (isUnlocked && currentUser?.emailVerified && pendingSharedItemId) {
                 const sharedTargetId = pendingSharedItemId;
                 pendingSharedItemId = null;
                 const matched = items.find(i => i.id === sharedTargetId);
@@ -865,41 +1143,44 @@
 
         // Firestore 항목 저장/업데이트 헬퍼
         async function saveItemToCloud(item) {
-            if (!currentUser || !db) {
-                const idx = items.findIndex(i => i.id === item.id);
-                if (idx !== -1) items[idx] = item;
-                else items.unshift(item);
-                saveLocalItems();
-                onDataLoaded();
+            if (!currentUser || !currentUser.emailVerified) {
+                showToast('⚠️ 먼저 이메일 로그인 및 인증을 완료해 주세요.');
                 return;
             }
-            const docRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'ideaVaultItems', item.id);
-            await setDoc(docRef, item);
+            try {
+                await createVaultItem(currentUser.uid, item);
+            } catch (error) {
+                showToast('⚠️ 저장 중 오류가 발생했습니다.');
+                throw error;
+            }
         }
 
         // Firestore 항목 부분 수정 헬퍼
         async function updateItemInCloud(id, partialData) {
-            if (!currentUser || !db) {
-                const idx = items.findIndex(i => i.id === id);
-                if (idx !== -1) items[idx] = { ...items[idx], ...partialData };
-                saveLocalItems();
-                onDataLoaded();
+            if (!currentUser || !currentUser.emailVerified) {
+                showToast('⚠️ 먼저 이메일 로그인 및 인증을 완료해 주세요.');
                 return;
             }
-            const docRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'ideaVaultItems', id);
-            await updateDoc(docRef, partialData);
+            try {
+                await updateVaultItem(currentUser.uid, id, partialData);
+            } catch (error) {
+                showToast('⚠️ 수정 중 오류가 발생했습니다.');
+                throw error;
+            }
         }
 
         // Firestore 항목 삭제 헬퍼
         async function deleteItemFromCloud(id) {
-            if (!currentUser || !db) {
-                items = items.filter(i => i.id !== id);
-                saveLocalItems();
-                onDataLoaded();
+            if (!currentUser || !currentUser.emailVerified) {
+                showToast('⚠️ 먼저 이메일 로그인 및 인증을 완료해 주세요.');
                 return;
             }
-            const docRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'ideaVaultItems', id);
-            await deleteDoc(docRef);
+            try {
+                await deleteVaultItem(currentUser.uid, id);
+            } catch (error) {
+                showToast('⚠️ 삭제 중 오류가 발생했습니다.');
+                throw error;
+            }
         }
 
         // Gemini API 호출 헬퍼 (지수 백오프 적용)
@@ -1078,6 +1359,17 @@
 
         // 📦 JSON 백업 & 복원 기능
         window.openBackupModal = function() {
+            const localItems = loadLocalItems();
+            const migrateBtn = document.getElementById('migrateLocalBtn');
+            if (migrateBtn) {
+                if (localItems.length > 0 && currentUser?.emailVerified) {
+                    migrateBtn.classList.remove('hidden');
+                    migrateBtn.classList.add('flex');
+                } else {
+                    migrateBtn.classList.add('hidden');
+                    migrateBtn.classList.remove('flex');
+                }
+            }
             const modal = document.getElementById('backupModal');
             modal.classList.remove('hidden');
             modal.classList.add('flex');
@@ -1089,8 +1381,28 @@
             modal.classList.remove('flex');
         };
 
+        window.migrateLocalItemsToCloud = async function() {
+            const localItems = loadLocalItems();
+            if (localItems.length === 0) return;
+            let count = 0;
+            for (const item of localItems) {
+                if (item && item.title) {
+                    await saveItemToCloud(item);
+                    count++;
+                }
+            }
+            localStorage.removeItem(LOCAL_STORAGE_KEY);
+            closeBackupModal();
+            showToast(`☁️ 기존 로컬 기록 ${count}개를 클라우드로 가져왔습니다!`);
+        };
+
         window.exportDataJSON = function() {
-            const dataStr = JSON.stringify(items, null, 2);
+            const serializable = items.map((item) => ({
+                ...item,
+                createdAt: getTimestampMillis(item.createdAt),
+                updatedAt: getTimestampMillis(item.updatedAt || item.createdAt),
+            }));
+            const dataStr = JSON.stringify(serializable, null, 2);
             const blob = new Blob([dataStr], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -1111,13 +1423,15 @@
                 try {
                     const imported = JSON.parse(e.target.result);
                     if (!Array.isArray(imported)) throw new Error('Invalid format');
+                    let restoredCount = 0;
                     for (const item of imported) {
                         if (item.id && item.title) {
                             await saveItemToCloud(item);
+                            restoredCount++;
                         }
                     }
                     closeBackupModal();
-                    showToast(`🎉 ${imported.length}개의 기록이 성공적으로 복원되었습니다!`);
+                    showToast(`🎉 ${restoredCount}개의 기록이 클라우드에 복원되었습니다!`);
                 } catch (err) {
                     showToast('⚠️ 올바른 백업 JSON 파일이 아닙니다.');
                 }
@@ -1150,8 +1464,15 @@
             return div.innerHTML;
         }
 
+        function getTimestampMillis(ts) {
+            if (typeof ts === 'number') return ts;
+            if (ts && typeof ts.toMillis === 'function') return ts.toMillis();
+            if (ts && typeof ts.seconds === 'number') return ts.seconds * 1000;
+            return Date.now();
+        }
+
         function formatDate(timestamp) {
-            const d = new Date(timestamp);
+            const d = new Date(getTimestampMillis(timestamp));
             return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
         }
 
@@ -1222,13 +1543,15 @@
             });
 
             filtered.sort((a, b) => {
+                const aTime = getTimestampMillis(a.createdAt);
+                const bTime = getTimestampMillis(b.createdAt);
                 if (sortBy === 'favorite') {
                     if (a.favorite !== b.favorite) return b.favorite ? 1 : -1;
-                    return b.createdAt - a.createdAt;
+                    return bTime - aTime;
                 } else if (sortBy === 'oldest') {
-                    return a.createdAt - b.createdAt;
+                    return aTime - bTime;
                 }
-                return b.createdAt - a.createdAt;
+                return bTime - aTime;
             });
 
             if (filtered.length === 0) {
